@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  temporal_server:
+   image: ianthpun/temporalite
+   ports:
+     - 7233:7233
+     - 8233:8233
+  
+  
