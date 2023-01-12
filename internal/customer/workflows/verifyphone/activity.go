@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+type SMSSender interface {
+	SendSMS(ctx context.Context, phoneNumber, message string) error
+}
+
 type TwilioSMSSender struct {
 	ctx context.Context
 }
@@ -20,8 +24,4 @@ type MockSMSSender struct {
 func (m *MockSMSSender) SendSMS(ctx context.Context, message, phoneNumber string) error {
 	fmt.Printf("sent message: %s to phone number : %s", message, phoneNumber)
 	return nil
-}
-
-func GenerateCode() string {
-	return "acbde"
 }
