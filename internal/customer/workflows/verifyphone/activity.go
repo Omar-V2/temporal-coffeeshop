@@ -1,27 +1,30 @@
 package sms
 
 import (
-	"context"
 	"fmt"
 )
 
-type SMSSender interface {
-	SendSMS(ctx context.Context, phoneNumber, message string) error
+type Sender interface {
+	SendSMS(phoneNumber, message string) error
 }
 
-type TwilioSMSSender struct {
-	ctx context.Context
+type SMSSender struct {
+	Sender Sender
 }
 
-func (t *TwilioSMSSender) SendSMS(ctx context.Context, message, phoneNumber string) error {
+func (s *SMSSender) SendSMS(phoneNumber, message string) error {
+	return s.Sender.SendSMS(phoneNumber, message)
+}
+
+type TwilioSMSSender struct{}
+
+func (t *TwilioSMSSender) SendSMS(phoneNumber, message string) error {
 	return nil
 }
 
-type MockSMSSender struct {
-	ctx context.Context
-}
+type MockSMSSender struct{}
 
-func (m *MockSMSSender) SendSMS(ctx context.Context, message, phoneNumber string) error {
+func (m *MockSMSSender) SendSMS(phoneNumber, message string) error {
 	fmt.Printf("sent message: %s to phone number : %s", message, phoneNumber)
 	return nil
 }

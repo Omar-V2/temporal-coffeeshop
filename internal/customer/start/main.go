@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"time"
 
+	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
 
-	wf "tmprldemo/internal/customer/workflows"
+	verifyphonewf "tmprldemo/internal/customer/workflows/verifyphone"
 )
 
 func main() {
@@ -19,28 +20,21 @@ func main() {
 	defer c.Close()
 
 	options := client.StartWorkflowOptions{
-		ID:        "greeting-workflow",
-		TaskQueue: "GREETING_TASK_QUEUE",
+		ID:                       "customer_id1",
+		TaskQueue:                "TEMPORAL_COFEE_SHOP_TASK_QUEUE",
+		WorkflowExecutionTimeout: time.Minute * 10,
+		WorkflowIDReusePolicy:    enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE_FAILED_ONLY,
 	}
 
-	// Start the Workflow
-	name := "Omar"
-	we, err := c.ExecuteWorkflow(context.Background(), options, wf.GreetingWorkflow, name)
+	verifyPhoneParams := verifyphonewf.VerifyPhoneWorkflowParams{
+		PhoneNumber:          "+447500140",
+		MaximumAttempts:      3,
+		CodeValidityDuration: time.Minute * 15,
+	}
+
+	we, err := c.ExecuteWorkflow(context.Background(), options, verifyphonewf.NewVerifyPhoneWorkflow, verifyPhoneParams)
 	if err != nil {
 		log.Fatalln("unable to complete Workflow", err)
 	}
-
-	// Get the results
-	var greeting string
-	err = we.Get(context.Background(), &greeting)
-	if err != nil {
-		log.Fatalln("unable to get Workflow result", err)
-	}
-
-	printResults(greeting, we.GetID(), we.GetRunID())
-}
-
-func printResults(greeting string, workflowID, runID string) {
-	fmt.Printf("\nWorkflowID: %s RunID: %s\n", workflowID, runID)
-	fmt.Printf("\n%s\n\n", greeting)
+	err = we.Get(context.Background(), nil)
 }

@@ -5,7 +5,8 @@ import (
 
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-	wf "tmprldemo/internal/customer/workflows"
+
+	verifyphonewf "tmprldemo/internal/customer/workflows/verifyphone"
 )
 
 func main() {
@@ -15,9 +16,14 @@ func main() {
 	}
 	defer c.Close()
 
-	w := worker.New(c, "GREETING_TASK_QUEUE", worker.Options{})
-	w.RegisterWorkflow(wf.GreetingWorkflow)
-	w.RegisterActivity(wf.ComposeGreeting)
+	w := worker.New(c, "TEMPORAL_COFEE_SHOP_TASK_QUEUE", worker.Options{})
+
+	// Verify Phone Workflow
+	smsSender := verifyphonewf.SMSSender{
+		Sender: &verifyphonewf.MockSMSSender{},
+	}
+	w.RegisterActivity(&smsSender)
+	w.RegisterWorkflow(verifyphonewf.NewVerifyPhoneWorkflow)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {

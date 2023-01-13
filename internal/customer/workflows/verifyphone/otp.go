@@ -31,5 +31,5 @@ func (o *OneTimeCode) Matches(codeToCompare string) bool {
 }
 
 func generateCode() string {
-	return "acbde"
+	return "1234"
 }
