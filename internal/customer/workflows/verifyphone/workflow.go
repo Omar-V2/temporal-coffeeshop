@@ -54,11 +54,11 @@ func NewVerifyPhoneWorkflow(
 }
 
 func (wf *VerifyPhoneWorkflow) run() error {
-
 	// TODO: Add explicit retry policy
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
+	activityCtx := workflow.WithActivityOptions(wf.ctx, options)
 
 	var attempts uint
 	var state VerificationState
@@ -72,12 +72,14 @@ func (wf *VerifyPhoneWorkflow) run() error {
 	userCodeChannel := workflow.GetSignalChannel(wf.ctx, UserCodeChannel)
 	for attempts < wf.maximumAttempts {
 		state = InProgress
-		wf.ctx = workflow.WithActivityOptions(wf.ctx, options)
 
 		oneTimeCode := NewOneTimeCode(wf.codeValidityDuration)
 
-		message := fmt.Sprintf("Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: %s", oneTimeCode.code)
-		err = workflow.ExecuteActivity(wf.ctx, smsSender.SendSMS, wf.phoneNumber, message).Get(wf.ctx, nil)
+		message := fmt.Sprintf(
+			"Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: %s",
+			oneTimeCode.code,
+		)
+		err = workflow.ExecuteActivity(activityCtx, smsSender.SendSMS, wf.phoneNumber, message).Get(wf.ctx, nil)
 		if err != nil {
 			return fmt.Errorf("unable to send sms to phone number: %s. err: %w", wf.phoneNumber, err)
 		}
@@ -95,6 +97,7 @@ func (wf *VerifyPhoneWorkflow) run() error {
 			state = CorrectCode
 			return nil
 		}
+
 		state = IncorrectCode
 	}
 

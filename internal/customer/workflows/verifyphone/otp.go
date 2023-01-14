@@ -24,12 +24,10 @@ func (o *OneTimeCode) IsExpired(currentTime time.Time) bool {
 
 func (o *OneTimeCode) Matches(codeToCompare string) bool {
 	match := crypto.ConstantTimeCompare([]byte(o.code), []byte(codeToCompare))
-	if match == 1 {
-		return true
-	}
-	return false
+	return match == 1
 }
 
+// TODO: generate random four digit code
 func generateCode() string {
 	return "1234"
 }
