@@ -21,21 +21,21 @@ service CustomerService {
   // Verifies the phone number of a new customer.
   rpc VerifyCustomer(VerifyCustomerRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "v1/customer/{customer_id}/verify"
+      post: "/v1/customer/{customer_id}/verify"
     };
   }
 
   // Retrieves a single customer by their id.
   rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse) {
     option (google.api.http) = {
-      get: "v1/customer/{customer_id}"
+      get: "/v1/customer/{customer_id}"
     };
   }
 
   // Retrieves a batch of customers by a list of the provided customer ids.
   rpc BatchGetCustomers(BatchGetCustomersRequest) returns (BatchGetCustomersResponse) {
     option (google.api.http) = {
-      get: "v1/customer/{customer_ids}"
+      get: "/v1/customer/{customer_ids}"
     };
   }
 }
@@ -113,7 +113,7 @@ message GetCustomerResponse {
 // BatchGetCustomersRequest is the request issued to get a batch of customers by their ids.
 message BatchGetCustomersRequest {
   // The id of the customer to retrieve
-  repeated string customer_id = 1;
+  repeated string customer_ids = 1;
   // The number of customers to return per page.
   uint32 page_size = 2;
   // The index from which to start fetching customers.
