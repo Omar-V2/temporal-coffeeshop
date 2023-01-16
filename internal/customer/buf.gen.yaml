@@ -1,0 +1,15 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: tmprlcoffee
+plugins:
+  - plugin: go
+    out: ../pb
+    opt: paths=source_relative
+  - plugin: go-grpc
+    out: gen/proto/go
+    opt: paths=source_relative
+  - plugin: grpc-gateway
+    out: gen/proto/go
+    opt: paths=source_relative

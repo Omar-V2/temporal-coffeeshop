@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package customer.v1;
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+// TODO: Add proto-gen-validate rules
+
+
+// The Customer service is responsible for all customer related requests such creating new customers and verifying exsiting ones.
+service CustomerService {
+  // Creates a new customer.
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {
+    option (google.api.http) = {
+      post: "/v1/customer"
+      body: "*"
+    };
+  }
+
+  // Verifies the phone number of a new customer.
+  rpc VerifyCustomer(VerifyCustomerRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "v1/customer/{customer_id}/verify"
+    };
+  }
+
+  // Retrieves a single customer by their id.
+  rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse) {
+    option (google.api.http) = {
+      get: "v1/customer/{customer_id}"
+    };
+  }
+
+  // Retrieves a batch of customers by a list of the provided customer ids.
+  rpc BatchGetCustomers(BatchGetCustomersRequest) returns (BatchGetCustomersResponse) {
+    option (google.api.http) = {
+      get: "v1/customer/{customer_ids}"
+    };
+  }
+}
+
+
+// Customer represents a customer in the coffee shop system.
+message Customer {
+  // A unique id for the customer
+  string id = 1;
+  // The customer's first name
+  string first_name = 2;
+  // The customer's last name
+  string last_name = 3;
+  // The customer's email address
+  string email = 4;
+  // The customer's phone number
+  string phone_number = 5;
+}
+
+// CreateCustomerRequest is the request issued to create a customer in the system.
+// This method is idempotent.
+message CreateCustomerRequest {
+  // An idempotent request id to uniqely identify the create request. 
+  // This field is optional - if no request_id is provided, one will be automatically generated.
+  string request_id = 1;
+  // The customer to be created.
+  Customer customer = 2;
+}
+
+// CreateCustomerResponse is the response returned after a customer has been created. It returns the newly created customer.
+message CreateCustomerResponse {
+  // The created customer.
+  Customer customer = 1;
+}
+
+// VerificationResult represents the possible values after attempting to verify a customer's phone number
+enum VerificationResult {
+  // Default value.
+  VERIFICATION_RESULT_UNSPECIFIED = 0;
+  // The customer has been sent the server generated code but has not yet submitted his code.
+  VERIFICATION_RESULT_IN_PROGRESS = 1;
+  // The code which the customer sent has expired.
+  VERIFICATION_RESULT_CODE_EXPIRED = 2;
+  // The code which the customer sent does not match the server generated code.
+  VERIFICATION_RESULT_INCORRECT_CODE = 3;
+  // The customer has reached the maximum number of attempts to verify the phone number and can not perform any further attempts.
+  VERIFICATION_RESULT_MAX_ATTEMPTS_REACHED = 4;
+  // The code which the customer sent matches the verification code and the customer's phone is now verified.
+  VERIFICATION_RESULT_SUCCESS = 5;
+}
+
+// VerifyCustomerRequest performs verification on the customers phone number by comparing 
+message VerifyCustomerRequest {
+  // An idempotent request id to uniqely identify the verify request.
+  // This field is optional - if no request_id is provided, one will be automatically generated.
+  string request_id = 1;
+  // The id of the customer to verify.
+  string customer_id = 2;
+  // The user provided code for the verification process.
+  string verification_code = 3;
+}
+
+// GetCustomerRequest is the request issued to get a single customer by their id.
+message GetCustomerRequest {
+  // The id of the customer to retrieve.
+  string customer_id = 1;
+}
+
+// GetCustomerResponse is the response returned when GetCustomer is called.
+message GetCustomerResponse {
+  // The retrieved customer.
+  Customer customer = 1;
+}
+
+// BatchGetCustomersRequest is the request issued to get a batch of customers by their ids.
+message BatchGetCustomersRequest {
+  // The id of the customer to retrieve
+  repeated string customer_id = 1;
+  // The number of customers to return per page.
+  uint32 page_size = 2;
+  // The index from which to start fetching customers.
+  uint32 page_index = 3;
+}
+
+// BatchGetCustomersResponse is the response returned when BatchGetCustomers is called.
+// It is a paginated response.
+message BatchGetCustomersResponse {
+  // The list of retrieved customers
+  repeated Customer customers = 1;
+  // This field is true if there are more pages of results and fasle otherwise.
+  bool next = 2;
+}
