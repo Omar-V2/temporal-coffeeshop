@@ -147,6 +147,45 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowErrorsOnMaximumAtt
 	s.ErrorContains(err, "too many attempts")
 }
 
+func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
+	testPhoneNumber := "012345678"
+	testMessage := "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
+
+	s.env.OnActivity(s.smsSender.SendSMS, mock.Anything, mock.Anything).
+		Return(
+			func(phoneNumber, message string) error {
+				s.Equal(testPhoneNumber, phoneNumber)
+				s.Equal(testMessage, message)
+				return nil
+			},
+		)
+
+	params := VerifyPhoneWorkflowParams{
+		PhoneNumber:          testPhoneNumber,
+		MaximumAttempts:      1,
+		CodeValidityDuration: time.Minute * 1,
+	}
+
+	// send the correct code after one minute, which is after it has expired.
+	s.env.RegisterDelayedCallback(func() {
+		s.env.SignalWorkflow(UserCodeChannel, "1234")
+	}, time.Minute*2)
+
+	s.env.ExecuteWorkflow(NewVerifyPhoneWorkflow, params)
+	s.True(s.env.IsWorkflowCompleted())
+
+	res, err := s.env.QueryWorkflow(VerificationStateQueryType)
+	s.NoError(err)
+
+	var state VerificationState
+	err = res.Get(&state)
+	s.NoError(err)
+	s.Equal(state, MaxAttemptsReached)
+
+	err = s.env.GetWorkflowError()
+	s.ErrorContains(err, "too many attempts")
+}
+
 func TestVerifyPhoneWorkflow(t *testing.T) {
 	suite.Run(t, new(VerifyPhoneWorkflowTestSuite))
 }

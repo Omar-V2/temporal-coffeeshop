@@ -88,6 +88,8 @@ func (wf *VerifyPhoneWorkflow) run() error {
 		userCodeChannel.Receive(wf.ctx, &userCode)
 		attempts++
 
+		// note: states CodeExpired and IncorrectCode are somewhat redundant since we transition to the next iteration
+		// of the for loop immediately, so state moves directly to InProgress.
 		if oneTimeCode.IsExpired(workflow.Now(wf.ctx)) {
 			state = CodeExpired
 			continue
