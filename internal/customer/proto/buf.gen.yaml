@@ -1,8 +1,4 @@
 version: v1
-managed:
-  enabled: true
-  go_package_prefix:
-    default: tmprlcoffee
 plugins:
   - plugin: buf.build/protocolbuffers/go
     out: ../pb

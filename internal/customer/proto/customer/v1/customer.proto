@@ -5,6 +5,8 @@ package customer.v1;
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
+option go_package = "tmprldemo/pb";
+
 // TODO: Add proto-gen-validate rules
 
 
