@@ -3,6 +3,7 @@ module tmprldemo
 go 1.18
 
 require (
+	github.com/Masterminds/squirrel v1.5.3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 	github.com/stretchr/testify v1.8.1
 	go.temporal.io/api v1.13.0
@@ -22,6 +23,8 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
