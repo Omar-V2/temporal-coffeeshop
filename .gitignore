@@ -12,3 +12,6 @@
 *.out
 
 *.env
+
+# Generated code from protobuf
+internal/customer/pb/*

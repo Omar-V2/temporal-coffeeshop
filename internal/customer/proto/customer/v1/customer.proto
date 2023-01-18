@@ -37,7 +37,7 @@ service CustomerService {
   // Retrieves a batch of customers by a list of the provided customer ids.
   rpc BatchGetCustomers(BatchGetCustomersRequest) returns (BatchGetCustomersResponse) {
     option (google.api.http) = {
-      get: "/v1/customer/{customer_ids}"
+      get: "/v1/customer/{customer_ids}:batchGet"
     };
   }
 }
