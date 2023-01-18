@@ -45,16 +45,18 @@ service CustomerService {
 
 // Customer represents a customer in the coffee shop system.
 message Customer {
-  // A unique id for the customer
+  // A unique id for the customer.
   string id = 1;
-  // The customer's first name
+  // The customer's first name.
   string first_name = 2;
-  // The customer's last name
+  // The customer's last name.
   string last_name = 3;
-  // The customer's email address
+  // The customer's email address.
   string email = 4;
-  // The customer's phone number
+  // The customer's phone number.
   string phone_number = 5;
+  // Whether the customers's phone number has been verified.
+  bool phone_verified = 6;
 }
 
 // CreateCustomerRequest is the request issued to create a customer in the system.
@@ -73,7 +75,7 @@ message CreateCustomerResponse {
   Customer customer = 1;
 }
 
-// VerificationResult represents the possible values after attempting to verify a customer's phone number
+// VerificationResult represents the possible values after attempting to verify a customer's phone number.
 enum VerificationResult {
   // Default value.
   VERIFICATION_RESULT_UNSPECIFIED = 0;
@@ -114,7 +116,7 @@ message GetCustomerResponse {
 
 // BatchGetCustomersRequest is the request issued to get a batch of customers by their ids.
 message BatchGetCustomersRequest {
-  // The id of the customer to retrieve
+  // The id of the customer to retrieve.
   repeated string customer_ids = 1;
   // The number of customers to return per page.
   uint32 page_size = 2;
@@ -125,7 +127,7 @@ message BatchGetCustomersRequest {
 // BatchGetCustomersResponse is the response returned when BatchGetCustomers is called.
 // It is a paginated response.
 message BatchGetCustomersResponse {
-  // The list of retrieved customers
+  // The list of retrieved customers.
   repeated Customer customers = 1;
   // This field is true if there are more pages of results and fasle otherwise.
   bool next = 2;
