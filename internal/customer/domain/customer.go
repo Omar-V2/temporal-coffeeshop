@@ -1,7 +1,9 @@
 package domain
 
+import "github.com/google/uuid"
+
 type Customer struct {
-	ID            string
+	ID            uuid.UUID
 	FirstName     string
 	LastName      string
 	Email         string
@@ -10,6 +12,7 @@ type Customer struct {
 }
 
 func NewCustomer(
+	Id uuid.UUID,
 	firstName,
 	lastName,
 	email,
@@ -17,6 +20,7 @@ func NewCustomer(
 	phoneVerified bool,
 ) *Customer {
 	return &Customer{
+		ID:            Id,
 		FirstName:     firstName,
 		LastName:      lastName,
 		Email:         email,

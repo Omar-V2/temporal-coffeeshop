@@ -1,12 +1,17 @@
 package api
 
-import customerpb "tmprldemo/internal/customer/pb/customer/v1"
+import (
+	customerdata "tmprldemo/internal/customer/data/customer"
+	customerpb "tmprldemo/internal/customer/pb/customer/v1"
+)
 
 type customerServiceGRPCServer struct {
 	customerpb.UnimplementedCustomerServiceServer
-	// creator, verifier, getter and batch getter interfaces go here
+	customerCreator customerdata.CustomerCreator
 }
 
-func NewCustomerServiceGRPCServer() *customerServiceGRPCServer {
-	return &customerServiceGRPCServer{}
+func NewCustomerServiceGRPCServer(customerCreator customerdata.CustomerCreator) *customerServiceGRPCServer {
+	return &customerServiceGRPCServer{
+		customerCreator: customerCreator,
+	}
 }

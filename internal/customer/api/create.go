@@ -6,17 +6,20 @@ import (
 	customerpb "tmprldemo/internal/customer/pb/customer/v1"
 )
 
-func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, customer *customerpb.CreateCustomerRequest) (*customerpb.CreateCustomerResponse, error) {
-	return nil, nil
-	// domainCustomer := ConvertPbToCustomer(customer)
-	// createdCustomer, err := s.CustomerCreator.Create(domainCustomer)
-	// if err != nil {
-	// 	return nil, err
-	// }
+func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request *customerpb.CreateCustomerRequest) (*customerpb.CreateCustomerResponse, error) {
+	domainCustomer, err := ConvertFromPbToCustomer(request.Customer)
+	if err != nil {
+		return nil, err
+	}
 
-	// s.temporalClient.ExecuteWorkflow(ctx, "VerifyPhoneWorkflow", customer.Phone)
+	createdCustomer, err := s.customerCreator.Create(ctx, *domainCustomer)
+	if err != nil {
+		return nil, err
+	}
 
-	// return &customerpb.CreateCustomerResponse{
-	// 	Customer: ConvertToPbCustomer(domainCustomer),
-	// }
+	// TODO: execute temporal Verify Phone Workflow
+
+	return &customerpb.CreateCustomerResponse{
+		Customer: ConvertFromCustomerToPb(*createdCustomer),
+	}, nil
 }
