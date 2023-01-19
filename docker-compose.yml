@@ -6,4 +6,24 @@ services:
    ports:
      - 7233:7233
      - 8233:8233
-# TODO: add postgres services
+  postgres:
+    image: "postgres"
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=customer
+    volumes:
+      - sql-db-data:/var/lib/postgresql/data
+      - ./internal/customer/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+  # customer-service:
+  #   build: "customer"
+  #   ports:
+  #     - 8080:8080
+  # grpc-gateway:
+  #   build: "proxy"
+  #   ports:
+  #     - 8081:8081
+volumes:
+  sql-db-data:

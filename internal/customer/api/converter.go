@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"tmprldemo/internal/customer/domain"
 	customerpb "tmprldemo/internal/customer/pb/customer/v1"
 
@@ -14,6 +15,8 @@ var ErrInvalidUUID = errors.New("failed to convert provided customer ID into UUI
 
 func ConvertFromPbToCustomer(customer *customerpb.Customer) (*domain.Customer, error) {
 	var customerID uuid.UUID
+
+	log.Println("received customer ", customer)
 
 	if customer.Id != "" {
 		customerID = uuid.New()

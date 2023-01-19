@@ -9,7 +9,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-const customersTable = "customers"
+const customersTable = "customer"
 
 type CustomerCreator interface {
 	Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error)
@@ -30,6 +30,7 @@ func NewCustomerDBCreator(db *sql.DB, statementBuilderType sq.StatementBuilderTy
 func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error) {
 	psql := c.statementBuilderType
 
+	// TODO: Make idempotent
 	query := psql.Insert(customersTable).
 		SetMap(map[string]interface{}{
 			"id":             customer.ID,
@@ -39,7 +40,7 @@ func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer
 			"phone_number":   customer.PhoneNumber,
 			"phone_verified": customer.PhoneVerified,
 		}).
-		Suffix(`RETURNING "id", "first_name", "last_name", "phone_number", "phone_verified"`)
+		Suffix(`RETURNING "id", "first_name", "last_name", "email", "phone_number", "phone_verified"`)
 
 	queryString, _, err := query.ToSql()
 	if err != nil {
@@ -48,7 +49,17 @@ func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer
 	log.Printf("Create Customer SQL Query: %s", queryString)
 
 	var createdCustomer domain.Customer
-	err = query.QueryRowContext(ctx).Scan(&createdCustomer)
+	err = query.
+		RunWith(c.db).
+		QueryRowContext(ctx).
+		Scan(
+			&createdCustomer.ID,
+			&createdCustomer.FirstName,
+			&createdCustomer.LastName,
+			&createdCustomer.Email,
+			&createdCustomer.PhoneNumber,
+			&createdCustomer.PhoneVerified,
+		)
 	if err != nil {
 		return nil, err
 	}

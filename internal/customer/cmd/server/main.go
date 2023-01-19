@@ -9,6 +9,8 @@ import (
 	customerdata "tmprldemo/internal/customer/data/customer"
 	customerpb "tmprldemo/internal/customer/pb/customer/v1"
 
+	_ "github.com/jackc/pgx/v4/stdlib"
+
 	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/grpc"
 )
@@ -17,7 +19,11 @@ import (
 
 const (
 	gRPCCustomerServiceAddress = "localhost:8080"
-	postgresAddress            = "POSTGRES_URL"
+	postgresAddress            = "postgres"
+	postgresPort               = "5432"
+	postgresUser               = "postgres"
+	postgresPass               = "root"
+	postgresDB                 = "customer"
 )
 
 func main() {
@@ -27,7 +33,8 @@ func main() {
 }
 
 func run() error {
-	db, err := sql.Open("pgx", postgresAddress)
+	postgresURI := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s", postgresUser, postgresPass, postgresPort, postgresDB)
+	db, err := sql.Open("pgx", postgresURI)
 	if err != nil {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
