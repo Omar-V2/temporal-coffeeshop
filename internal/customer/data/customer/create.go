@@ -9,29 +9,27 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-const customersTable = "customer"
+const customerTable = "customer"
 
 type CustomerCreator interface {
 	Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error)
 }
 
 type CustomerDBCreator struct {
-	db                   *sql.DB
-	statementBuilderType sq.StatementBuilderType
+	db *sql.DB
 }
 
-func NewCustomerDBCreator(db *sql.DB, statementBuilderType sq.StatementBuilderType) *CustomerDBCreator {
+func NewCustomerDBCreator(db *sql.DB) *CustomerDBCreator {
 	return &CustomerDBCreator{
-		db:                   db,
-		statementBuilderType: statementBuilderType,
+		db: db,
 	}
 }
 
 func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error) {
-	psql := c.statementBuilderType
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).RunWith(c.db)
 
 	// TODO: Make idempotent
-	query := psql.Insert(customersTable).
+	query := psql.Insert(customerTable).
 		SetMap(map[string]interface{}{
 			"id":             customer.ID,
 			"first_name":     customer.FirstName,
@@ -50,9 +48,8 @@ func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer
 
 	var createdCustomer domain.Customer
 	err = query.
-		RunWith(c.db).
-		QueryRowContext(ctx).
-		Scan(
+		ScanContext(
+			ctx,
 			&createdCustomer.ID,
 			&createdCustomer.FirstName,
 			&createdCustomer.LastName,

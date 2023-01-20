@@ -18,7 +18,7 @@ func ConvertFromPbToCustomer(customer *customerpb.Customer) (*domain.Customer, e
 
 	log.Println("received customer ", customer)
 
-	if customer.Id != "" {
+	if customer.Id == "" {
 		customerID = uuid.New()
 	} else {
 		var err error

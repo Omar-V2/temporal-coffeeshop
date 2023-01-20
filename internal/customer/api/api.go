@@ -8,10 +8,15 @@ import (
 type customerServiceGRPCServer struct {
 	customerpb.UnimplementedCustomerServiceServer
 	customerCreator customerdata.CustomerCreator
+	customerGetter  customerdata.CustomerGetter
 }
 
-func NewCustomerServiceGRPCServer(customerCreator customerdata.CustomerCreator) *customerServiceGRPCServer {
+func NewCustomerServiceGRPCServer(
+	customerCreator customerdata.CustomerCreator,
+	customerGetter customerdata.CustomerGetter,
+) *customerServiceGRPCServer {
 	return &customerServiceGRPCServer{
 		customerCreator: customerCreator,
+		customerGetter:  customerGetter,
 	}
 }

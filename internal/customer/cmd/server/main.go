@@ -11,7 +11,6 @@ import (
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 
-	sq "github.com/Masterminds/squirrel"
 	"google.golang.org/grpc"
 )
 
@@ -33,15 +32,18 @@ func main() {
 }
 
 func run() error {
-	postgresURI := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s", postgresUser, postgresPass, postgresPort, postgresDB)
+	postgresURI := fmt.Sprintf(
+		"postgres://%s:%s@localhost:%s/%s",
+		postgresUser, postgresPass, postgresPort, postgresDB,
+	)
 	db, err := sql.Open("pgx", postgresURI)
 	if err != nil {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
 
-	sqStatementBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	customerDBCreator := customerdata.NewCustomerDBCreator(db, sqStatementBuilder)
-	customerServiceServer := api.NewCustomerServiceGRPCServer(customerDBCreator)
+	customerDBCreator := customerdata.NewCustomerDBCreator(db)
+	customerDBGetter := customerdata.NewCustomerDBGetter(db)
+	customerServiceServer := api.NewCustomerServiceGRPCServer(customerDBCreator, customerDBGetter)
 
 	server := grpc.NewServer()
 	customerpb.RegisterCustomerServiceServer(server, customerServiceServer)
