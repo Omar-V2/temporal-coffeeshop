@@ -5,6 +5,7 @@ import (
 	customerpb "tmprldemo/internal/customer/pb/customer/v1"
 )
 
+// GetCustomer returns a single customer by their ID.
 func (s *customerServiceGRPCServer) GetCustomer(ctx context.Context, request *customerpb.GetCustomerRequest) (*customerpb.GetCustomerResponse, error) {
 	if err := validateUUIDs(request.CustomerId); err != nil {
 		return nil, err
@@ -20,6 +21,7 @@ func (s *customerServiceGRPCServer) GetCustomer(ctx context.Context, request *cu
 	}, nil
 }
 
+// BatchGetCustomers returns a batch of customers by their IDs.
 func (s *customerServiceGRPCServer) BatchGetCustomers(ctx context.Context, request *customerpb.BatchGetCustomersRequest) (*customerpb.BatchGetCustomersResponse, error) {
 	if err := validateUUIDs(request.CustomerIds...); err != nil {
 		return nil, err

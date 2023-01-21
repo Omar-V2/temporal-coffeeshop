@@ -11,6 +11,8 @@ type customerServiceGRPCServer struct {
 	customerGetter  customerdata.CustomerGetter
 }
 
+// NewCustomerServiceGRPCServer creates and returns the gRPC server
+// responsible for serving requests for the Customer service.
 func NewCustomerServiceGRPCServer(
 	customerCreator customerdata.CustomerCreator,
 	customerGetter customerdata.CustomerGetter,

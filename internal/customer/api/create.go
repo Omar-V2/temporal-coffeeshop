@@ -6,6 +6,7 @@ import (
 	customerpb "tmprldemo/internal/customer/pb/customer/v1"
 )
 
+// CreateCustomer creates a new customer in the coffee shop system.
 func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request *customerpb.CreateCustomerRequest) (*customerpb.CreateCustomerResponse, error) {
 	domainCustomer, err := ConvertFromPbToCustomer(request.Customer)
 	if err != nil {

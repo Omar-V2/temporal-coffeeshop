@@ -10,6 +10,9 @@ import (
 
 // TOOD: Add unit tests
 
+// ConvertFromPbToCustomer converts a protobuf Customer into a domain Customer.
+// It also generates and sets a resource UUID for the customer if one is not provided.
+// If an ID is provided but it is not a valid UUID an error will be returned.
 func ConvertFromPbToCustomer(customer *customerpb.Customer) (*domain.Customer, error) {
 	var customerID uuid.UUID
 
@@ -33,6 +36,7 @@ func ConvertFromPbToCustomer(customer *customerpb.Customer) (*domain.Customer, e
 	), nil
 }
 
+// ConvertFromCustomerToPb converts a domain Customer into a protobuf Customer.
 func ConvertFromCustomerToPb(customer domain.Customer) *customerpb.Customer {
 	return &customerpb.Customer{
 		Id:            customer.ID.String(), // consider handling nil case here?
@@ -44,6 +48,7 @@ func ConvertFromCustomerToPb(customer domain.Customer) *customerpb.Customer {
 	}
 }
 
+// ConvertFromCustomersToPb converts a slice of domain Customers to a slice of protobuf Customers.
 func ConvertFromCustomersToPb(customers domain.Customers) []*customerpb.Customer {
 	var customersPb []*customerpb.Customer
 	for _, customer := range customers {
