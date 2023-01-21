@@ -7,6 +7,7 @@ import (
 	"tmprldemo/internal/customer/domain"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/v2/dbscan"
 )
 
 type CustomerGetter interface {
@@ -33,30 +34,44 @@ func (g *CustomerDBGetter) Get(ctx context.Context, customerID string) (*domain.
 		From(customerTable).
 		Where(sq.Eq{"id": customerID})
 
-	queryString, _, err := query.ToSql()
+	logQuery(query)
+
+	rows, err := query.Query()
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Get Customer SQL Query: %s", queryString)
 
 	var c domain.Customer
-	err = query.
-		ScanContext(
-			ctx,
-			&c.ID,
-			&c.FirstName,
-			&c.LastName,
-			&c.Email,
-			&c.PhoneNumber,
-			&c.PhoneVerified,
-		)
-	if err != nil {
-		return nil, err
-	}
+	dbscan.ScanOne(c, rows)
 
 	return &c, nil
 }
 
 func (g *CustomerDBGetter) BatchGet(ctx context.Context, customerIDs []string) (domain.Customers, error) {
-	return nil, nil
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).RunWith(g.db)
+
+	query := psql.Select("*").
+		From(customerTable).
+		Where(sq.Eq{"id": customerIDs})
+
+	logQuery(query)
+
+	rows, err := query.Query()
+	if err != nil {
+		return nil, err
+	}
+
+	var customers domain.Customers
+	dbscan.ScanAll(&customers, rows)
+
+	return customers, nil
+}
+
+type convertableQuery interface {
+	MustSql() (string, []interface{})
+}
+
+func logQuery(query convertableQuery) {
+	queryString, _ := query.MustSql()
+	log.Printf("Get Customer SQL Query: %s", queryString)
 }

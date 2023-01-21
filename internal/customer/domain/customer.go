@@ -11,7 +11,7 @@ type Customer struct {
 	PhoneVerified bool
 }
 
-type Customers []Customer
+type Customers []*Customer
 
 func NewCustomer(
 	Id uuid.UUID,

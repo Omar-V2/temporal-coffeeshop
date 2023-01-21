@@ -1,8 +1,7 @@
 package api
 
 import (
-	"errors"
-	"log"
+	"fmt"
 	"tmprldemo/internal/customer/domain"
 	customerpb "tmprldemo/internal/customer/pb/customer/v1"
 
@@ -11,12 +10,8 @@ import (
 
 // TOOD: Add unit tests
 
-var ErrInvalidUUID = errors.New("failed to convert provided customer ID into UUID: not a valid UUID")
-
 func ConvertFromPbToCustomer(customer *customerpb.Customer) (*domain.Customer, error) {
 	var customerID uuid.UUID
-
-	log.Println("received customer ", customer)
 
 	if customer.Id == "" {
 		customerID = uuid.New()
@@ -24,7 +19,7 @@ func ConvertFromPbToCustomer(customer *customerpb.Customer) (*domain.Customer, e
 		var err error
 		customerID, err = uuid.Parse(customer.Id)
 		if err != nil {
-			return nil, ErrInvalidUUID
+			return nil, fmt.Errorf("failed to convert provided customer ID into UUID:  %s is not a valid UUID", customer.Id)
 		}
 	}
 
@@ -47,4 +42,13 @@ func ConvertFromCustomerToPb(customer domain.Customer) *customerpb.Customer {
 		PhoneNumber:   customer.PhoneNumber,
 		PhoneVerified: customer.PhoneVerified,
 	}
+}
+
+func ConvertFromCustomersToPb(customers domain.Customers) []*customerpb.Customer {
+	var customersPb []*customerpb.Customer
+	for _, customer := range customers {
+		customerPb := ConvertFromCustomerToPb(*customer)
+		customersPb = append(customersPb, customerPb)
+	}
+	return customersPb
 }

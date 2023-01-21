@@ -3,10 +3,10 @@ package customerdata
 import (
 	"context"
 	"database/sql"
-	"log"
 	"tmprldemo/internal/customer/domain"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/v2/dbscan"
 )
 
 const customerTable = "customer"
@@ -28,7 +28,12 @@ func NewCustomerDBCreator(db *sql.DB) *CustomerDBCreator {
 func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).RunWith(c.db)
 
-	// TODO: Make idempotent
+	// extract request id from ctx
+
+	// TODO: Make idempotent - check for request id conflict error.
+	// if request id already exists then do a get request (GetByRequestId)
+	// and return the result to the caller.
+
 	query := psql.Insert(customerTable).
 		SetMap(map[string]interface{}{
 			"id":             customer.ID,
@@ -40,26 +45,15 @@ func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer
 		}).
 		Suffix(`RETURNING "id", "first_name", "last_name", "email", "phone_number", "phone_verified"`)
 
-	queryString, _, err := query.ToSql()
+	logQuery(query)
+
+	rows, err := query.Query()
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Create Customer SQL Query: %s", queryString)
 
 	var createdCustomer domain.Customer
-	err = query.
-		ScanContext(
-			ctx,
-			&createdCustomer.ID,
-			&createdCustomer.FirstName,
-			&createdCustomer.LastName,
-			&createdCustomer.Email,
-			&createdCustomer.PhoneNumber,
-			&createdCustomer.PhoneVerified,
-		)
-	if err != nil {
-		return nil, err
-	}
+	dbscan.ScanOne(&createdCustomer, rows)
 
 	return &createdCustomer, nil
 }

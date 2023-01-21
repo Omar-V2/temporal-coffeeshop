@@ -12,6 +12,7 @@ func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request 
 		return nil, err
 	}
 
+	// should place the request id on the context
 	createdCustomer, err := s.customerCreator.Create(ctx, *domainCustomer)
 	if err != nil {
 		return nil, err
