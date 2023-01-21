@@ -32,11 +32,11 @@ func main() {
 }
 
 func run() error {
-	postgresURI := fmt.Sprintf(
+	connectionString := fmt.Sprintf(
 		"postgres://%s:%s@localhost:%s/%s",
 		postgresUser, postgresPass, postgresPort, postgresDB,
 	)
-	db, err := sql.Open("pgx", postgresURI)
+	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
