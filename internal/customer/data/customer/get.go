@@ -20,9 +20,7 @@ type CustomerDBGetter struct {
 }
 
 func NewCustomerDBGetter(db *sql.DB) *CustomerDBGetter {
-	return &CustomerDBGetter{
-		db: db,
-	}
+	return &CustomerDBGetter{db: db}
 }
 
 // TODO: handling SQL errors, not found, conflicts etc.
@@ -34,15 +32,18 @@ func (g *CustomerDBGetter) Get(ctx context.Context, customerID string) (*domain.
 		From(customerTable).
 		Where(sq.Eq{"id": customerID})
 
-	logQuery(query)
+	queryString, _ := query.MustSql()
+	log.Printf("Get Customer SQL Query: %s", queryString)
 
-	rows, err := query.Query()
+	rows, err := query.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var c domain.Customer
-	dbscan.ScanOne(c, rows)
+	if err = dbscan.ScanOne(&c, rows); err != nil {
+		return nil, err
+	}
 
 	return &c, nil
 }
@@ -54,24 +55,18 @@ func (g *CustomerDBGetter) BatchGet(ctx context.Context, customerIDs []string) (
 		From(customerTable).
 		Where(sq.Eq{"id": customerIDs})
 
-	logQuery(query)
+	queryString, _ := query.MustSql()
+	log.Printf("Batch Get Customer SQL Query: %s", queryString)
 
-	rows, err := query.Query()
+	rows, err := query.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var customers domain.Customers
-	dbscan.ScanAll(&customers, rows)
+	if err = dbscan.ScanAll(&customers, rows); err != nil {
+		return nil, err
+	}
 
 	return customers, nil
-}
-
-type convertableQuery interface {
-	MustSql() (string, []interface{})
-}
-
-func logQuery(query convertableQuery) {
-	queryString, _ := query.MustSql()
-	log.Printf("Get Customer SQL Query: %s", queryString)
 }

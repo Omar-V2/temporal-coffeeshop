@@ -3,6 +3,7 @@ package customerdata
 import (
 	"context"
 	"database/sql"
+	"log"
 	"tmprldemo/internal/customer/domain"
 
 	sq "github.com/Masterminds/squirrel"
@@ -20,9 +21,7 @@ type CustomerDBCreator struct {
 }
 
 func NewCustomerDBCreator(db *sql.DB) *CustomerDBCreator {
-	return &CustomerDBCreator{
-		db: db,
-	}
+	return &CustomerDBCreator{db: db}
 }
 
 func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error) {
@@ -45,15 +44,18 @@ func (c *CustomerDBCreator) Create(ctx context.Context, customer domain.Customer
 		}).
 		Suffix(`RETURNING "id", "first_name", "last_name", "email", "phone_number", "phone_verified"`)
 
-	logQuery(query)
+	queryString, _ := query.MustSql()
+	log.Printf("Create Customer SQL Query: %s", queryString)
 
-	rows, err := query.Query()
+	rows, err := query.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var createdCustomer domain.Customer
-	dbscan.ScanOne(&createdCustomer, rows)
+	if err = dbscan.ScanOne(&createdCustomer, rows); err != nil {
+		return nil, err
+	}
 
 	return &createdCustomer, nil
 }
