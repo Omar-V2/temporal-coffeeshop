@@ -17,10 +17,10 @@ import (
 
 type CustomerDBCreatorTestSuite struct {
 	suite.Suite
-	postgresContaniner *gnomock.Container
-	db                 *sql.DB
-	creator            *CustomerDBCreator
-	getter             *CustomerDBGetter
+	postgresContainer *gnomock.Container
+	db                *sql.DB
+	creator           *CustomerDBCreator
+	getter            *CustomerDBGetter
 }
 
 func (s *CustomerDBCreatorTestSuite) SetupSuite() {
@@ -30,7 +30,7 @@ func (s *CustomerDBCreatorTestSuite) SetupSuite() {
 	)
 	s.Require().NoError(err)
 
-	s.postgresContaniner = container
+	s.postgresContainer = container
 	s.db = db
 	s.creator = NewCustomerDBCreator(db)
 	s.getter = NewCustomerDBGetter(db)
@@ -41,7 +41,7 @@ func (s *CustomerDBCreatorTestSuite) TearDownTest() {
 }
 
 func (s *CustomerDBCreatorTestSuite) TearDownSuite() {
-	gnomock.Stop(s.postgresContaniner)
+	gnomock.Stop(s.postgresContainer)
 }
 
 func (s *CustomerDBCreatorTestSuite) TestCreate() {
