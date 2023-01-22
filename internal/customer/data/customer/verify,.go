@@ -27,13 +27,10 @@ func (v CustomerDBVerifier) Verify(ctx context.Context, customerID string) error
 		Where(sq.Eq{"id": customerID}).
 		Set("phone_verified", true)
 
-	queryString, _, err := query.ToSql()
-	if err != nil {
-		return err
-	}
+	queryString, _ := query.MustSql()
 	log.Printf("Verify Customer SQL Query: %s", queryString)
 
-	_, err = query.ExecContext(ctx)
+	_, err := query.ExecContext(ctx)
 	if err != nil {
 		return err
 	}
