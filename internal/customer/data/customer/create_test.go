@@ -3,7 +3,6 @@ package customerdata
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"testing"
 	"tmprldemo/internal/customer/domain"
 	"tmprldemo/pkg/testutils"
@@ -58,7 +57,6 @@ func (s *CustomerDBCreatorTestSuite) TestCreate() {
 	createdCustomer, err := s.creator.Create(context.Background(), customerToCreate)
 	s.Require().NoError(err)
 
-	fmt.Println("created customer ID is ", createdCustomer.ID.String())
 	s.Equal(createdCustomer.ID.String(), customerID.String())
 
 	fetchedCustomer, err := s.getter.Get(context.Background(), customerID.String())
