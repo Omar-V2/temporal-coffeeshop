@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	customerpb "tmprldemo/internal/customer/pb/customer/v1"
+	customerpb "tmprldemo/internal/pb/customer/v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

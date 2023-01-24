@@ -7,7 +7,7 @@ import (
 	"net"
 	"tmprldemo/internal/customer/api"
 	customerdata "tmprldemo/internal/customer/data/customer"
-	customerpb "tmprldemo/internal/customer/pb/customer/v1"
+	customerpb "tmprldemo/internal/pb/customer/v1"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 

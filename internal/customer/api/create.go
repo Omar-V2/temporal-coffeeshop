@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	customerpb "tmprldemo/internal/customer/pb/customer/v1"
+	customerpb "tmprldemo/internal/pb/customer/v1"
 )
 
 // CreateCustomer creates a new customer in the coffee shop system.
@@ -20,6 +20,7 @@ func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request 
 	}
 
 	// TODO: execute temporal Verify Phone Workflow
+	// customer ID should be used as the workflow ID.
 
 	return &customerpb.CreateCustomerResponse{
 		Customer: ConvertFromCustomerToPb(*createdCustomer),
