@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	gRPCCustomerServiceAddress = "localhost:8080"
-	gRPCGatewayAddress         = "localhost:8081"
+	gRPCCustomerServiceAddress = "customer-service:8080"
+	gRPCGatewayAddress         = "0.0.0.0:8081"
 )
 
 func main() {

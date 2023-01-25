@@ -17,7 +17,7 @@ import (
 // TODO: Add flags service parameters things like: address, ports etc
 
 const (
-	gRPCCustomerServiceAddress = "localhost:8080"
+	gRPCCustomerServiceAddress = "0.0.0.0:8080"
 	postgresAddress            = "postgres"
 	postgresPort               = "5432"
 	postgresUser               = "postgres"
@@ -33,7 +33,7 @@ func main() {
 
 func run() error {
 	connectionString := fmt.Sprintf(
-		"postgres://%s:%s@localhost:%s/%s",
+		"postgres://%s:%s@postgres:%s/%s",
 		postgresUser, postgresPass, postgresPort, postgresDB,
 	)
 	db, err := sql.Open("pgx", connectionString)
