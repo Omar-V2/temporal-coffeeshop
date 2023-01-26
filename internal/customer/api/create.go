@@ -2,11 +2,19 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	customerpb "tmprldemo/internal/pb/customer/v1"
+
+	"tmprldemo/internal/customer/workflows/verifyphone"
+
+	"go.temporal.io/api/enums/v1"
+	"go.temporal.io/sdk/client"
 )
 
 // CreateCustomer creates a new customer in the coffee shop system.
+// It also executes a workflow responsible for the phone verification process for the newly created customer.
 func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request *customerpb.CreateCustomerRequest) (*customerpb.CreateCustomerResponse, error) {
 	domainCustomer, err := ConvertFromPbToCustomer(request.Customer)
 	if err != nil {
@@ -19,8 +27,21 @@ func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request 
 		return nil, err
 	}
 
-	// TODO: execute temporal Verify Phone Workflow
-	// customer ID should be used as the workflow ID.
+	workflowOptions := client.StartWorkflowOptions{
+		ID:                       createdCustomer.ID.String(),
+		TaskQueue:                "TEMPORAL_COFFEE_SHOP_TASK_QUEUE",
+		WorkflowExecutionTimeout: time.Hour * 24,
+		WorkflowIDReusePolicy:    enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE_FAILED_ONLY,
+	}
+	params := verifyphone.WorkflowParams{
+		PhoneNumber:          createdCustomer.PhoneNumber,
+		MaximumAttempts:      3,
+		CodeValidityDuration: time.Minute * 5,
+	}
+	_, err = s.temporalClient.ExecuteWorkflow(ctx, workflowOptions, verifyphone.NewWorkflow, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute verify phone workflow: %w", err)
+	}
 
 	return &customerpb.CreateCustomerResponse{
 		Customer: ConvertFromCustomerToPb(*createdCustomer),

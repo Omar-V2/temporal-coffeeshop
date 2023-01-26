@@ -1,4 +1,4 @@
-package sms
+package verifyphone
 
 import (
 	crypto "crypto/subtle"

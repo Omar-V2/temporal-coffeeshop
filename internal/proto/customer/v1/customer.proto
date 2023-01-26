@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package customer.v1;
 
-import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
 option go_package = "tmprldemo/pb";
@@ -21,9 +20,10 @@ service CustomerService {
   }
 
   // Verifies the phone number of a new customer.
-  rpc VerifyCustomer(VerifyCustomerRequest) returns (google.protobuf.Empty) {
+  rpc VerifyCustomer(VerifyCustomerRequest) returns (VerifyCustomerResponse) {
     option (google.api.http) = {
       post: "/v1/customer/{customer_id}/verify"
+      body: "*"
     };
   }
 
@@ -93,13 +93,18 @@ enum VerificationResult {
 
 // VerifyCustomerRequest performs verification on the customers phone number by comparing 
 message VerifyCustomerRequest {
-  // An idempotent request id to uniqely identify the verify request.
-  // This field is optional - if no request_id is provided, one will be automatically generated.
-  string request_id = 1;
   // The id of the customer to verify.
   string customer_id = 2;
   // The user provided code for the verification process.
   string verification_code = 3;
+}
+
+// VerifyCustomerResponse contains the result of the verification attempt made by a given customer.
+message VerifyCustomerResponse {
+  //The id of the customer for which this verification result is attributed.
+  string customer_id = 1;
+  // The result of the verification.
+  VerificationResult result = 2;
 }
 
 // GetCustomerRequest is the request issued to get a single customer by their id.

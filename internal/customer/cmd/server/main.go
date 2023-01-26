@@ -10,6 +10,7 @@ import (
 	customerpb "tmprldemo/internal/pb/customer/v1"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"go.temporal.io/sdk/client"
 
 	"google.golang.org/grpc"
 )
@@ -41,9 +42,16 @@ func run() error {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
 
+	temporalClient, err := client.Dial(client.Options{})
+	if err != nil {
+		return fmt.Errorf("failed to instantiate temporal client: %w", err)
+	}
+
 	customerDBCreator := customerdata.NewCustomerDBCreator(db)
 	customerDBGetter := customerdata.NewCustomerDBGetter(db)
-	customerServiceServer := api.NewCustomerServiceGRPCServer(customerDBCreator, customerDBGetter)
+	customerServiceServer := api.NewCustomerServiceGRPCServer(
+		customerDBCreator, customerDBGetter, temporalClient,
+	)
 
 	server := grpc.NewServer()
 	customerpb.RegisterCustomerServiceServer(server, customerServiceServer)

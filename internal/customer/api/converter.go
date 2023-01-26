@@ -3,12 +3,11 @@ package api
 import (
 	"fmt"
 	"tmprldemo/internal/customer/domain"
+	"tmprldemo/internal/customer/workflows/verifyphone"
 	customerpb "tmprldemo/internal/pb/customer/v1"
 
 	"github.com/google/uuid"
 )
-
-// TOOD: Add unit tests
 
 // ConvertFromPbToCustomer converts a protobuf Customer into a domain Customer.
 // It also generates and sets a resource UUID for the customer if one is not provided.
@@ -56,4 +55,18 @@ func ConvertFromCustomersToPb(customers domain.Customers) []*customerpb.Customer
 		customersPb = append(customersPb, customerPb)
 	}
 	return customersPb
+}
+
+// convertWorkflowResultToPb converts the verify phone workflow state to proto verification result.
+func convertWorkflowResultToPb(wfResult verifyphone.VerificationState) customerpb.VerificationResult {
+	wfStateToPbResult := map[verifyphone.VerificationState]customerpb.VerificationResult{
+		verifyphone.StateUnknown:       customerpb.VerificationResult_VERIFICATION_RESULT_UNSPECIFIED,
+		verifyphone.InProgress:         customerpb.VerificationResult_VERIFICATION_RESULT_IN_PROGRESS,
+		verifyphone.CodeExpired:        customerpb.VerificationResult_VERIFICATION_RESULT_CODE_EXPIRED,
+		verifyphone.MaxAttemptsReached: customerpb.VerificationResult_VERIFICATION_RESULT_MAX_ATTEMPTS_REACHED,
+		verifyphone.IncorrectCode:      customerpb.VerificationResult_VERIFICATION_RESULT_INCORRECT_CODE,
+		verifyphone.CorrectCode:        customerpb.VerificationResult_VERIFICATION_RESULT_SUCCESS,
+	}
+
+	return wfStateToPbResult[wfResult]
 }

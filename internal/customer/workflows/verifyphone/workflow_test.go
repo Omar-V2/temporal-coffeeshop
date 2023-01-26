@@ -1,4 +1,4 @@
-package sms
+package verifyphone
 
 import (
 	"testing"
@@ -40,7 +40,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflow() {
 			},
 		)
 
-	params := VerifyPhoneWorkflowParams{
+	params := WorkflowParams{
 		PhoneNumber:          testPhoneNumber,
 		MaximumAttempts:      2,
 		CodeValidityDuration: time.Minute * 2,
@@ -48,10 +48,10 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflow() {
 
 	// send the correct code on the first try - expecting workflow to complete thereafter.
 	s.env.RegisterDelayedCallback(func() {
-		s.env.SignalWorkflow(UserCodeChannel, "1234")
+		s.env.SignalWorkflow(UserCodeSignal, "1234")
 	}, time.Minute*1)
 
-	s.env.ExecuteWorkflow(NewVerifyPhoneWorkflow, params)
+	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationStateQueryType)
@@ -76,7 +76,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTrie
 			},
 		).Twice()
 
-	params := VerifyPhoneWorkflowParams{
+	params := WorkflowParams{
 		PhoneNumber:          testPhoneNumber,
 		MaximumAttempts:      2,
 		CodeValidityDuration: time.Minute * 3,
@@ -84,15 +84,15 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTrie
 
 	// send the incorrect code on the first try
 	s.env.RegisterDelayedCallback(func() {
-		s.env.SignalWorkflow(UserCodeChannel, "2345")
+		s.env.SignalWorkflow(UserCodeSignal, "2345")
 	}, time.Minute*1)
 
 	// send the correct code on the second try
 	s.env.RegisterDelayedCallback(func() {
-		s.env.SignalWorkflow(UserCodeChannel, "1234")
+		s.env.SignalWorkflow(UserCodeSignal, "1234")
 	}, time.Minute*2)
 
-	s.env.ExecuteWorkflow(NewVerifyPhoneWorkflow, params)
+	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationStateQueryType)
@@ -117,7 +117,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowErrorsOnMaximumAtt
 			},
 		)
 
-	params := VerifyPhoneWorkflowParams{
+	params := WorkflowParams{
 		PhoneNumber:          testPhoneNumber,
 		MaximumAttempts:      2,
 		CodeValidityDuration: time.Minute * 3,
@@ -125,14 +125,14 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowErrorsOnMaximumAtt
 
 	// send the incorrect code twice - hence exceeded max attempts and causing the wf to terminate
 	s.env.RegisterDelayedCallback(func() {
-		s.env.SignalWorkflow(UserCodeChannel, "2345")
+		s.env.SignalWorkflow(UserCodeSignal, "2345")
 	}, time.Minute*1)
 
 	s.env.RegisterDelayedCallback(func() {
-		s.env.SignalWorkflow(UserCodeChannel, "4567")
+		s.env.SignalWorkflow(UserCodeSignal, "4567")
 	}, time.Minute*1)
 
-	s.env.ExecuteWorkflow(NewVerifyPhoneWorkflow, params)
+	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationStateQueryType)
@@ -160,7 +160,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
 			},
 		)
 
-	params := VerifyPhoneWorkflowParams{
+	params := WorkflowParams{
 		PhoneNumber:          testPhoneNumber,
 		MaximumAttempts:      1,
 		CodeValidityDuration: time.Minute * 1,
@@ -168,10 +168,10 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
 
 	// send the correct code after one minute, which is after it has expired.
 	s.env.RegisterDelayedCallback(func() {
-		s.env.SignalWorkflow(UserCodeChannel, "1234")
+		s.env.SignalWorkflow(UserCodeSignal, "1234")
 	}, time.Minute*2)
 
-	s.env.ExecuteWorkflow(NewVerifyPhoneWorkflow, params)
+	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationStateQueryType)

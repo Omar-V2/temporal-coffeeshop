@@ -4,11 +4,10 @@ import (
 	"context"
 	"log"
 	"time"
+	"tmprldemo/internal/customer/workflows/verifyphone"
 
 	"go.temporal.io/api/enums/v1"
 	"go.temporal.io/sdk/client"
-
-	verifyphonewf "tmprldemo/internal/customer/workflows/verifyphone"
 )
 
 func main() {
@@ -21,18 +20,18 @@ func main() {
 
 	options := client.StartWorkflowOptions{
 		ID:                       "customer_id1",
-		TaskQueue:                "TEMPORAL_COFEE_SHOP_TASK_QUEUE",
+		TaskQueue:                "TEMPORAL_COFFEE_SHOP_TASK_QUEUE",
 		WorkflowExecutionTimeout: time.Minute * 10,
 		WorkflowIDReusePolicy:    enums.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE_FAILED_ONLY,
 	}
 
-	verifyPhoneParams := verifyphonewf.VerifyPhoneWorkflowParams{
+	verifyPhoneParams := verifyphone.WorkflowParams{
 		PhoneNumber:          "+447500140",
 		MaximumAttempts:      3,
 		CodeValidityDuration: time.Minute * 15,
 	}
 
-	we, err := c.ExecuteWorkflow(context.Background(), options, verifyphonewf.NewVerifyPhoneWorkflow, verifyPhoneParams)
+	we, err := c.ExecuteWorkflow(context.Background(), options, verifyphone.NewWorkflow, verifyPhoneParams)
 	if err != nil {
 		log.Fatalln("unable to complete Workflow", err)
 	}

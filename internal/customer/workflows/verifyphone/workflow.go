@@ -1,4 +1,4 @@
-package sms
+package verifyphone
 
 import (
 	"errors"
@@ -22,11 +22,11 @@ const (
 )
 
 const (
-	UserCodeChannel            = "verify_phone_user_code_channel"
+	UserCodeSignal             = "verify_phone_user_code_signal"
 	VerificationStateQueryType = "verify_phone_workflow_state"
 )
 
-type VerifyPhoneWorkflowParams struct {
+type WorkflowParams struct {
 	PhoneNumber          string
 	MaximumAttempts      uint
 	CodeValidityDuration time.Duration
@@ -39,9 +39,9 @@ type VerifyPhoneWorkflow struct {
 	codeValidityDuration time.Duration
 }
 
-func NewVerifyPhoneWorkflow(
+func NewWorkflow(
 	ctx workflow.Context,
-	params VerifyPhoneWorkflowParams,
+	params WorkflowParams,
 ) error {
 	wf := &VerifyPhoneWorkflow{
 		ctx:                  ctx,
@@ -69,7 +69,7 @@ func (wf *VerifyPhoneWorkflow) run() error {
 		return err
 	}
 
-	userCodeChannel := workflow.GetSignalChannel(wf.ctx, UserCodeChannel)
+	userCodeChannel := workflow.GetSignalChannel(wf.ctx, UserCodeSignal)
 	for attempts < wf.maximumAttempts {
 		state = InProgress
 

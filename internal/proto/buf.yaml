@@ -8,4 +8,3 @@ lint:
   use:
     - DEFAULT
     - COMMENTS
-  rpc_allow_google_protobuf_empty_responses: true
