@@ -42,7 +42,7 @@ func run() error {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
 
-	temporalClient, err := client.Dial(client.Options{})
+	temporalClient, err := client.Dial(client.Options{HostPort: "temporal-server:7233"})
 	if err != nil {
 		return fmt.Errorf("failed to instantiate temporal client: %w", err)
 	}

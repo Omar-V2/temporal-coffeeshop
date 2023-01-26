@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	c, err := client.Dial(client.Options{})
+	c, err := client.Dial(client.Options{HostPort: "temporal-server:7233"})
 	if err != nil {
 		log.Fatalln("unable to create Temporal client", err)
 	}

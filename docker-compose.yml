@@ -1,11 +1,16 @@
 version: '3'
 
 services:
-  temporal_server:
+  temporal-server:
     image: ianthpun/temporalite
     ports:
      - 7233:7233
      - 8233:8233
+  
+  temporal-worker:
+    build:
+      context: "."
+      dockerfile: "internal/customer/Dockerfile.worker"
 
   postgres:
     image: "postgres"
@@ -22,7 +27,7 @@ services:
   customer-service:
     build:
       context: "."
-      dockerfile: internal/customer/Dockerfile
+      dockerfile: internal/customer/Dockerfile.server
     ports:
       - "8080:8080"
 
