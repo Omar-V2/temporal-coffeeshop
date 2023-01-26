@@ -8,6 +8,7 @@ services:
      - 8233:8233
   
   temporal-worker:
+    image: "customer-worker"
     build:
       context: "."
       dockerfile: "internal/customer/Dockerfile.worker"
@@ -25,6 +26,7 @@ services:
       - ./internal/customer/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   customer-service:
+    image: "customer-service"
     build:
       context: "."
       dockerfile: internal/customer/Dockerfile.server
@@ -32,6 +34,7 @@ services:
       - "8080:8080"
 
   grpc-gateway:
+    image: "grpc-gateway"
     build:
       context: "."
       dockerfile: proxy/Dockerfile
