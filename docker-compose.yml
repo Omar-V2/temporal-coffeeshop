@@ -12,6 +12,8 @@ services:
     build:
       context: "."
       dockerfile: "internal/customer/Dockerfile.worker"
+    depends_on:
+      - temporal-server
 
   postgres:
     image: "postgres"
@@ -32,6 +34,10 @@ services:
       dockerfile: internal/customer/Dockerfile.server
     ports:
       - "8080:8080"
+    depends_on:
+      - postgres
+      - temporal-server
+      - temporal-worker
 
   grpc-gateway:
     image: "grpc-gateway"
@@ -40,6 +46,8 @@ services:
       dockerfile: proxy/Dockerfile
     ports:
       - "8081:8081"
+    depends_on:
+      - customer-service
 
 volumes:
   sql-db-data:

@@ -18,7 +18,7 @@ import (
 // TODO: Add flags service parameters things like: address, ports etc
 
 const (
-	gRPCCustomerServiceAddress = "0.0.0.0:8080"
+	gRPCCustomerServiceAddress = "customer-service:8080"
 	postgresAddress            = "postgres"
 	postgresPort               = "5432"
 	postgresUser               = "postgres"
