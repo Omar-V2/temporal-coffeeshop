@@ -18,8 +18,9 @@ import (
 
 type Config struct {
 	CustomerServiceAddress string `env:"CUSTOMER_SERVICE_ADDRESS" env-default:"customer-service:8080"`
+	TemporalAddress        string `env:"TEMPORAL_ADDRESS" env-default:"temporal-server:7233"`
 	PostgresPort           string `env:"POSTGRES_PORT" env-default:"5432"`
-	PostgresAddress        string `env:"POSTGRES_ADDRESS" env-default:"postgres"`
+	PostgresHost           string `env:"POSTGRES_HOST" env-default:"postgres"`
 	PostgresUser           string `env:"POSTGRES_USER" env-default:"postgres"`
 	PostgresPassword       string `env:"POSTGRES_PASSWORD" env-default:"root"`
 	PostgresDB             string `env:"POSTGRES_DB" env-default:"customer"`
@@ -27,7 +28,7 @@ type Config struct {
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }
 
@@ -35,19 +36,19 @@ func run() error {
 	var cfg Config
 
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
-		return fmt.Errorf("failed to read environment variables: %w", err)
+		return fmt.Errorf("failed to read config from environment variables: %w", err)
 	}
 
 	connectionString := fmt.Sprintf(
-		"postgres://%s:%s@postgres:%s/%s",
-		cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresPort, cfg.PostgresDB,
+		"postgres://%s:%s@%s:%s/%s",
+		cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresDB,
 	)
 	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
 
-	temporalClient, err := client.Dial(client.Options{HostPort: "temporal-server:7233"})
+	temporalClient, err := client.Dial(client.Options{HostPort: cfg.TemporalAddress})
 	if err != nil {
 		return fmt.Errorf("failed to instantiate temporal client: %w", err)
 	}
