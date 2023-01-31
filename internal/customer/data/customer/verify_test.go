@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+
 	"tmprldemo/internal/customer/domain"
+	migration "tmprldemo/internal/customer/migrations"
 	"tmprldemo/pkg/testutils"
 
 	"github.com/google/uuid"
@@ -22,11 +24,10 @@ type CustomerDBVerifierTestSuite struct {
 }
 
 func (s *CustomerDBVerifierTestSuite) SetupTest() {
-	container, db, err := testutils.NewPostgresInstance(
+	container, db := testutils.MustNewPostgresInstance(
 		"customer",
-		"/Users/omardiab/code3/temporal-coffeeshop/internal/customer/migrations/init.sql",
+		migration.Customer,
 	)
-	s.Require().NoError(err)
 
 	s.postgresContainer = container
 	s.db = db

@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+
 	"tmprldemo/internal/customer/api"
 	customerdata "tmprldemo/internal/customer/data/customer"
+	migration "tmprldemo/internal/customer/migrations"
 	customerpb "tmprldemo/internal/pb/customer/v1"
+	"tmprldemo/pkg/database"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	_ "github.com/jackc/pgx/v4/stdlib"
@@ -46,6 +49,15 @@ func run() error {
 	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		return fmt.Errorf("failed to open connection to db: %w", err)
+	}
+
+	migrator, err := database.NewPostgresMigrator(migration.Customer, db)
+	if err != nil {
+		return fmt.Errorf("failed to create migrator: %w", err)
+	}
+
+	if err := migrator.Up(); err != nil {
+		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	temporalClient, err := client.Dial(client.Options{HostPort: cfg.TemporalAddress})

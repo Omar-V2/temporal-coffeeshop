@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+
 	"tmprldemo/internal/customer/domain"
+	migration "tmprldemo/internal/customer/migrations"
 	"tmprldemo/pkg/testutils"
 
 	"github.com/google/uuid"
 	"github.com/orlangure/gnomock"
 	"github.com/stretchr/testify/suite"
-
-	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type CustomerDBCreatorTestSuite struct {
@@ -23,11 +23,10 @@ type CustomerDBCreatorTestSuite struct {
 }
 
 func (s *CustomerDBCreatorTestSuite) SetupSuite() {
-	container, db, err := testutils.NewPostgresInstance(
+	container, db := testutils.MustNewPostgresInstance(
 		"customer",
-		"/Users/omardiab/code3/temporal-coffeeshop/internal/customer/migrations/init.sql",
+		migration.Customer,
 	)
-	s.Require().NoError(err)
 
 	s.postgresContainer = container
 	s.db = db

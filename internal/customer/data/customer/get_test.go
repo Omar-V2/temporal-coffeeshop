@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"testing"
+
 	"tmprldemo/internal/customer/domain"
+	migration "tmprldemo/internal/customer/migrations"
 	"tmprldemo/pkg/testutils"
 
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -23,11 +25,10 @@ type CustomerDBGetterTestSuite struct {
 }
 
 func (s *CustomerDBGetterTestSuite) SetupTest() {
-	container, db, err := testutils.NewPostgresInstance(
+	container, db := testutils.MustNewPostgresInstance(
 		"customer",
-		"/Users/omardiab/code3/temporal-coffeeshop/internal/customer/migrations/init.sql",
+		migration.Customer,
 	)
-	s.Require().NoError(err)
 
 	s.postgresContainer = container
 	s.db = db

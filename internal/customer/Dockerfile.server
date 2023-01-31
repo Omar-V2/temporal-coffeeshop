@@ -17,4 +17,3 @@ FROM scratch
 EXPOSE 8080
 COPY --from=builder /bin/app /app
 CMD ["/app"]
-

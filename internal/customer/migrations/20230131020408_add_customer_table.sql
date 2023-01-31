@@ -1,3 +1,5 @@
+-- +goose Up
+-- +goose StatementBegin
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- TODO: Add request id to customer table
@@ -11,3 +13,9 @@ CREATE TABLE IF NOT EXISTS customer (
         phone_verified BOOLEAN DEFAULT false,
         PRIMARY KEY (id)
 );
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS customer;
+-- +goose StatementEnd
