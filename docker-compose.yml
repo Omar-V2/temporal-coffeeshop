@@ -23,9 +23,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=customer
-    volumes:
-      - sql-db-data:/var/lib/postgresql/data
-      - ./internal/customer/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   customer-service:
     image: "customer-service"
@@ -48,6 +45,3 @@ services:
       - "8081:8081"
     depends_on:
       - customer-service
-
-volumes:
-  sql-db-data:
