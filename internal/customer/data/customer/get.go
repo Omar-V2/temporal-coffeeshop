@@ -10,11 +10,6 @@ import (
 	"github.com/georgysavva/scany/v2/dbscan"
 )
 
-type CustomerGetter interface {
-	Get(ctx context.Context, customerID string) (*domain.Customer, error)
-	BatchGet(ctx context.Context, customerIDs []string) (domain.Customers, error)
-}
-
 type CustomerDBGetter struct {
 	db *sql.DB
 }

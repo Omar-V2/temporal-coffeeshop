@@ -12,10 +12,6 @@ import (
 
 const customerTable = "customer"
 
-type CustomerCreator interface {
-	Create(ctx context.Context, customer domain.Customer) (*domain.Customer, error)
-}
-
 type CustomerDBCreator struct {
 	db *sql.DB
 }

@@ -8,10 +8,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-type CustomerVerifier interface {
-	Verify(ctc context.Context, customerID string) error
-}
-
 type CustomerDBVerifier struct {
 	db *sql.DB
 }
