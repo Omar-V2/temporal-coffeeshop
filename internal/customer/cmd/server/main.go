@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"tmprldemo/internal/customer/api"
 	customerdata "tmprldemo/internal/customer/data/customer"
@@ -52,8 +51,6 @@ func run() error {
 		return fmt.Errorf("failed to open connection to db: %w", err)
 	}
 
-	// Without this: Migrator fails to connect to DB instance :(
-	time.Sleep(time.Millisecond * 500)
 	migrator, err := database.NewPostgresMigrator(migration.Customer, db)
 	if err != nil {
 		return fmt.Errorf("failed to create migrator: %w", err)

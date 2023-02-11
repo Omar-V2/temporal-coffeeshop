@@ -13,7 +13,8 @@ services:
       context: "."
       dockerfile: "internal/customer/Dockerfile.worker"
     depends_on:
-      - temporal-server
+      temporal-server:
+        condition: service_started
 
   postgres:
     image: "postgres"
@@ -23,6 +24,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=customer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
 
   customer-service:
     image: "customer-service"
@@ -32,9 +38,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-      - temporal-server
-      - temporal-worker
+      postgres:
+        condition: service_healthy
+      temporal-server:
+        condition: service_started
+      temporal-worker:
+        condition: service_started
 
   grpc-gateway:
     image: "grpc-gateway"
@@ -44,4 +53,5 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - customer-service
+      customer-service:
+        condition: service_started
