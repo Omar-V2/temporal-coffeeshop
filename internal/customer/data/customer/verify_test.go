@@ -10,38 +10,39 @@ import (
 	"tmprldemo/pkg/testutils"
 
 	"github.com/google/uuid"
-	"github.com/orlangure/gnomock"
 	"github.com/stretchr/testify/suite"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 type CustomerDBVerifierTestSuite struct {
 	suite.Suite
+	testCtx           context.Context
+	postgresContainer testcontainers.Container
 	db                *sql.DB
-	postgresContainer *gnomock.Container
 	getter            *CustomerDBGetter
 	creator           *CustomerDBCreator
 	verifier          *CustomerDBVerifier
 }
 
 func (s *CustomerDBVerifierTestSuite) SetupTest() {
-	container, db := testutils.MustNewPostgresInstance(
+	s.testCtx = context.Background()
+	s.postgresContainer, s.db = testutils.MustNewPostgresInstance(
+		s.testCtx,
 		"customer",
 		migration.Customer,
 	)
 
-	s.postgresContainer = container
-	s.db = db
-	s.creator = NewCustomerDBCreator(db)
-	s.getter = NewCustomerDBGetter(db)
-	s.verifier = NewCustomerDBVerifier(db)
+	s.creator = NewCustomerDBCreator(s.db)
+	s.getter = NewCustomerDBGetter(s.db)
+	s.verifier = NewCustomerDBVerifier(s.db)
+}
+
+func (s *CustomerDBVerifierTestSuite) TearDownSuite() {
+	s.postgresContainer.Terminate(s.testCtx)
 }
 
 func (s *CustomerDBVerifierTestSuite) TearDownTest() {
 	s.db.Exec("TRUNCATE TABLE customer")
-}
-
-func (s *CustomerDBVerifierTestSuite) TearDownSuite() {
-	gnomock.Stop(s.postgresContainer)
 }
 
 func (s *CustomerDBVerifierTestSuite) TestVerify() {

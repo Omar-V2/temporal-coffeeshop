@@ -12,28 +12,37 @@ import (
 
 	"github.com/georgysavva/scany/v2/dbscan"
 	"github.com/google/uuid"
-	"github.com/orlangure/gnomock"
 	"github.com/stretchr/testify/suite"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 type CustomerDBGetterTestSuite struct {
 	suite.Suite
+	testCtx           context.Context
+	postgresContainer testcontainers.Container
 	db                *sql.DB
-	postgresContainer *gnomock.Container
 	getter            *CustomerDBGetter
 	creator           *CustomerDBCreator
 }
 
-func (s *CustomerDBGetterTestSuite) SetupTest() {
-	container, db := testutils.MustNewPostgresInstance(
+func (s *CustomerDBGetterTestSuite) SetupSuite() {
+	s.testCtx = context.Background()
+	s.postgresContainer, s.db = testutils.MustNewPostgresInstance(
+		s.testCtx,
 		"customer",
 		migration.Customer,
 	)
 
-	s.postgresContainer = container
-	s.db = db
-	s.creator = NewCustomerDBCreator(db)
-	s.getter = NewCustomerDBGetter(db)
+	s.creator = NewCustomerDBCreator(s.db)
+	s.getter = NewCustomerDBGetter(s.db)
+}
+
+func (s *CustomerDBGetterTestSuite) TearDownSuite() {
+	s.postgresContainer.Terminate(s.testCtx)
+}
+
+func (s *CustomerDBGetterTestSuite) TearDownTest() {
+	s.db.Exec("TRUNCATE TABLE customer")
 }
 
 func (s *CustomerDBGetterTestSuite) TestGetReturnsExistingCustomer() {
@@ -51,6 +60,7 @@ func (s *CustomerDBGetterTestSuite) TestGetReturnsExistingCustomer() {
 	s.Require().NoError(err)
 
 	fetchedCustomer, err := s.getter.Get(context.Background(), customerID.String())
+	s.Require().NoError(err)
 
 	s.Equal(customerToCreate, *fetchedCustomer)
 }

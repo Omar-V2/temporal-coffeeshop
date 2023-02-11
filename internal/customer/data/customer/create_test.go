@@ -10,28 +10,30 @@ import (
 	"tmprldemo/pkg/testutils"
 
 	"github.com/google/uuid"
-	"github.com/orlangure/gnomock"
 	"github.com/stretchr/testify/suite"
+	"github.com/testcontainers/testcontainers-go"
 )
 
 type CustomerDBCreatorTestSuite struct {
 	suite.Suite
-	postgresContainer *gnomock.Container
+	testCtx           context.Context
+	postgresContainer testcontainers.Container
 	db                *sql.DB
 	creator           *CustomerDBCreator
 	getter            *CustomerDBGetter
 }
 
 func (s *CustomerDBCreatorTestSuite) SetupSuite() {
-	container, db := testutils.MustNewPostgresInstance(
+	s.testCtx = context.Background()
+
+	s.postgresContainer, s.db = testutils.MustNewPostgresInstance(
+		s.testCtx,
 		"customer",
 		migration.Customer,
 	)
 
-	s.postgresContainer = container
-	s.db = db
-	s.creator = NewCustomerDBCreator(db)
-	s.getter = NewCustomerDBGetter(db)
+	s.creator = NewCustomerDBCreator(s.db)
+	s.getter = NewCustomerDBGetter(s.db)
 }
 
 func (s *CustomerDBCreatorTestSuite) TearDownTest() {
@@ -39,7 +41,7 @@ func (s *CustomerDBCreatorTestSuite) TearDownTest() {
 }
 
 func (s *CustomerDBCreatorTestSuite) TearDownSuite() {
-	gnomock.Stop(s.postgresContainer)
+	s.postgresContainer.Terminate(s.testCtx)
 }
 
 func (s *CustomerDBCreatorTestSuite) TestCreate() {
