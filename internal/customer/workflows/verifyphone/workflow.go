@@ -1,7 +1,6 @@
 package verifyphone
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -86,5 +85,5 @@ func NewWorkflow(
 	}
 
 	state = MaxAttemptsReached
-	return errors.New("too many attempts")
+	return nil
 }

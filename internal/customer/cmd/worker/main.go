@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	TemporalAddress   string `env:"TEMPORAL_ADDRESS" env-default:"temporal-server:7233"`
+	TemporalAddress   string `env:"TEMPORAL_ADDRESS" env-default:"temporal:7233"`
 	TemporalTaskQueue string `env:"TEMPORAL_TASK_QUEUE" env-default:"TEMPORAL_COFFEE_SHOP_TASK_QUEUE"`
 }
 
@@ -35,9 +35,11 @@ func run() error {
 
 	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{})
 
-	// Verify Phone Workflow
+	mockSMSSender := &verifyphone.MockSMSSender{}
+	// uncomment this line and use it in place of mockSMSSender to simulate an activity failure
+	// faultySMSSender := &verifyphone.FaultySMSSender{}
 	smsSender := verifyphone.SMSSender{
-		Sender: &verifyphone.MockSMSSender{},
+		Sender: mockSMSSender,
 	}
 	w.RegisterActivity(&smsSender)
 	w.RegisterWorkflow(verifyphone.NewWorkflow)

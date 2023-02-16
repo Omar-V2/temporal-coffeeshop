@@ -21,7 +21,7 @@ import (
 
 type Config struct {
 	CustomerServiceAddress string `env:"CUSTOMER_SERVICE_ADDRESS" env-default:"customer-service:8080"`
-	TemporalAddress        string `env:"TEMPORAL_ADDRESS" env-default:"temporal-server:7233"`
+	TemporalAddress        string `env:"TEMPORAL_ADDRESS" env-default:"temporal:7233"`
 	PostgresPort           string `env:"POSTGRES_PORT" env-default:"5432"`
 	PostgresHost           string `env:"POSTGRES_HOST" env-default:"postgres"`
 	PostgresUser           string `env:"POSTGRES_USER" env-default:"postgres"`

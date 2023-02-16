@@ -28,3 +28,12 @@ func (m *MockSMSSender) SendMessage(phoneNumber, message string) error {
 	fmt.Printf("sent message: %s to phone number : %s", message, phoneNumber)
 	return nil
 }
+
+type FaultySMSSender struct{}
+
+func (m *FaultySMSSender) SendMessage(phoneNumber, message string) error {
+	return fmt.Errorf(
+		"failed sendint text message: %s to phone number %s",
+		message, phoneNumber,
+	)
+}

@@ -1,19 +1,19 @@
 version: '3'
 
 services:
-  temporal-server:
+  temporal:
     image: ianthpun/temporalite
     ports:
      - 7233:7233
      - 8233:8233
   
-  temporal-worker:
+  customer-worker:
     image: "customer-worker"
     build:
       context: "."
       dockerfile: "internal/customer/Dockerfile.worker"
     depends_on:
-      temporal-server:
+      temporal:
         condition: service_started
 
   postgres:
@@ -40,9 +40,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      temporal-server:
+      temporal:
         condition: service_started
-      temporal-worker:
+      customer-worker:
         condition: service_started
 
   grpc-gateway:
