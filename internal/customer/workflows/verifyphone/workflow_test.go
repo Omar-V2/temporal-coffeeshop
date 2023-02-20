@@ -104,7 +104,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTrie
 	s.Equal(state, CorrectCode)
 }
 
-func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowErrorsOnMaximumAttempts() {
+func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowHasErrorStateOnMaximumAttempts() {
 	testPhoneNumber := "012345678"
 	testMessage := "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
 
@@ -142,9 +142,6 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowErrorsOnMaximumAtt
 	err = res.Get(&state)
 	s.NoError(err)
 	s.Equal(state, MaxAttemptsReached)
-
-	err = s.env.GetWorkflowError()
-	s.ErrorContains(err, "too many attempts")
 }
 
 func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
@@ -181,9 +178,6 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
 	err = res.Get(&state)
 	s.NoError(err)
 	s.Equal(state, MaxAttemptsReached)
-
-	err = s.env.GetWorkflowError()
-	s.ErrorContains(err, "too many attempts")
 }
 
 func TestVerifyPhoneWorkflow(t *testing.T) {
