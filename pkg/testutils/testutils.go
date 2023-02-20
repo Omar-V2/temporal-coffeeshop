@@ -11,6 +11,7 @@ import (
 
 	"github.com/docker/go-connections/nat"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/phayes/freeport"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -78,4 +79,13 @@ func MustNewPostgresInstance(ctx context.Context, dbName string, migrations embe
 	}
 
 	return postgresContainer, db
+}
+
+func GetFreeAddress(host string) (string, error) {
+	port, err := freeport.GetFreePort()
+	if err != nil {
+		return "", fmt.Errorf("failed to allocate free port: %w", err)
+	}
+
+	return fmt.Sprintf("%s:%d", host, port), nil
 }
