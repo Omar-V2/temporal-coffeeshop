@@ -6,18 +6,8 @@ services:
     ports:
      - 7233:7233
      - 8233:8233
+    entrypoint: ["/temporalite", "start", "-f", "temporalite.db", "-n", "default", "--ip", "0.0.0.0"]
   
-  customer-worker:
-    image: "customer-worker"
-    build:
-      context: "."
-      dockerfile: "internal/customer/Dockerfile.worker"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      temporal:
-        condition: service_started
-
   postgres:
     image: "postgres"
     ports:
@@ -31,6 +21,17 @@ services:
       interval: 2s
       timeout: 2s
       retries: 5
+
+  customer-worker:
+    image: "customer-worker"
+    build:
+      context: "."
+      dockerfile: "internal/customer/Dockerfile.worker"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_started
 
   customer-service:
     image: "customer-service"
