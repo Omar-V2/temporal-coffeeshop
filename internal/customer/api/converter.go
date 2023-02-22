@@ -58,9 +58,9 @@ func ConvertFromCustomersToPb(customers domain.Customers) []*customerpb.Customer
 }
 
 // convertWorkflowResultToPb converts the verify phone workflow state to proto verification result.
-func convertWorkflowResultToPb(wfResult verifyphone.VerificationState) customerpb.VerificationResult {
-	wfStateToPbResult := map[verifyphone.VerificationState]customerpb.VerificationResult{
-		verifyphone.StateUnknown:       customerpb.VerificationResult_VERIFICATION_RESULT_UNSPECIFIED,
+func convertWorkflowResultToPb(wfResult verifyphone.VerificationResult) customerpb.VerificationResult {
+	wfStateToPbResult := map[verifyphone.VerificationResult]customerpb.VerificationResult{
+		verifyphone.NotStarted:         customerpb.VerificationResult_VERIFICATION_RESULT_UNSPECIFIED,
 		verifyphone.InProgress:         customerpb.VerificationResult_VERIFICATION_RESULT_IN_PROGRESS,
 		verifyphone.CodeExpired:        customerpb.VerificationResult_VERIFICATION_RESULT_CODE_EXPIRED,
 		verifyphone.MaxAttemptsReached: customerpb.VerificationResult_VERIFICATION_RESULT_MAX_ATTEMPTS_REACHED,

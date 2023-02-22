@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
+
+	customerdata "tmprldemo/internal/customer/data/customer"
 	"tmprldemo/internal/customer/workflows/verifyphone"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
@@ -13,6 +17,11 @@ import (
 type Config struct {
 	TemporalAddress   string `env:"TEMPORAL_ADDRESS" env-default:"temporal:7233"`
 	TemporalTaskQueue string `env:"TEMPORAL_TASK_QUEUE" env-default:"TEMPORAL_COFFEE_SHOP_TASK_QUEUE"`
+	PostgresPort      string `env:"POSTGRES_PORT" env-default:"5432"`
+	PostgresHost      string `env:"POSTGRES_HOST" env-default:"postgres"`
+	PostgresUser      string `env:"POSTGRES_USER" env-default:"postgres"`
+	PostgresPassword  string `env:"POSTGRES_PASSWORD" env-default:"root"`
+	PostgresDB        string `env:"POSTGRES_DB" env-default:"customer"`
 }
 
 func main() {
@@ -33,15 +42,29 @@ func run() error {
 	}
 	defer c.Close()
 
-	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{})
+	connectionString := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s",
+		cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresDB,
+	)
+	db, err := sql.Open("pgx", connectionString)
+	if err != nil {
+		return fmt.Errorf("failed to open connection to db: %w", err)
+	}
 
-	mockSMSSender := &verifyphone.MockSMSSender{}
+	customerVerifier := customerdata.NewCustomerDBVerifier(db)
+
 	// uncomment this line and use it in place of mockSMSSender to simulate an activity failure
 	// faultySMSSender := &verifyphone.FaultySMSSender{}
-	smsSender := verifyphone.SMSSender{
-		Sender: mockSMSSender,
-	}
-	w.RegisterActivity(&smsSender)
+	mockSMSSender := &verifyphone.MockSMSSender{}
+	activities := verifyphone.NewActivities(mockSMSSender, customerVerifier)
+
+	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{})
+
+	// smsSender := verifyphone.SMSSender{
+	// 	Sender: mockSMSSender,
+	// }
+
+	w.RegisterActivity(activities)
 	w.RegisterWorkflow(verifyphone.NewWorkflow)
 
 	err = w.Run(worker.InterruptCh())

@@ -9,10 +9,10 @@ import (
 
 // TODO: Add comments to all structs/funcs etc.
 
-type VerificationState int
+type VerificationResult int
 
 const (
-	StateUnknown VerificationState = iota
+	NotStarted VerificationResult = iota
 	InProgress
 	CodeExpired
 	MaxAttemptsReached
@@ -21,8 +21,8 @@ const (
 )
 
 const (
-	UserCodeSignal             = "verify_phone_user_code_signal"
-	VerificationStateQueryType = "verify_phone_workflow_state"
+	UserCodeSignal              = "verify_phone_user_code_signal"
+	VerificationResultQueryType = "verify_phone_workflow_verification_result"
 )
 
 type WorkflowParams struct {
@@ -31,36 +31,31 @@ type WorkflowParams struct {
 	CodeValidityDuration time.Duration
 }
 
-func NewWorkflow(
-	ctx workflow.Context,
-	params WorkflowParams,
-) error {
-	// TODO: Add explicit retry policy
+func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 	}
 	activityCtx := workflow.WithActivityOptions(ctx, options)
 
 	var attempts uint
-	var state VerificationState
-	var smsSender *SMSSender
+	var mostRecentAttempt VerificationResult
+	var activities *activities
 
-	err := workflow.SetQueryHandler(ctx, VerificationStateQueryType, func() (VerificationState, error) { return state, nil })
+	err := workflow.SetQueryHandler(ctx, VerificationResultQueryType, func() (VerificationResult, error) { return mostRecentAttempt, nil })
 	if err != nil {
 		return err
 	}
 
 	userCodeChannel := workflow.GetSignalChannel(ctx, UserCodeSignal)
-	for attempts < params.MaximumAttempts {
-		state = InProgress
 
+	for attempts < params.MaximumAttempts {
 		oneTimeCode := NewOneTimeCode(params.CodeValidityDuration)
 
 		message := fmt.Sprintf(
 			"Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: %s",
 			oneTimeCode.code,
 		)
-		err = workflow.ExecuteActivity(activityCtx, smsSender.SendSMS, params.PhoneNumber, message).Get(ctx, nil)
+		err = workflow.ExecuteActivity(activityCtx, activities.SendSMS, params.PhoneNumber, message).Get(ctx, nil)
 		if err != nil {
 			return fmt.Errorf("unable to send sms to phone number: %s. err: %w", params.PhoneNumber, err)
 		}
@@ -69,21 +64,29 @@ func NewWorkflow(
 		userCodeChannel.Receive(ctx, &userCode)
 		attempts++
 
-		// note: states CodeExpired and IncorrectCode are somewhat redundant since we transition to the next iteration
-		// of the for loop immediately, so state moves directly to InProgress.
 		if oneTimeCode.IsExpired(workflow.Now(ctx)) {
-			state = CodeExpired
+			mostRecentAttempt = CodeExpired
 			continue
 		}
 
 		if oneTimeCode.Matches(userCode) {
-			state = CorrectCode
+			mostRecentAttempt = CorrectCode
+
+			err := workflow.ExecuteActivity(
+				activityCtx,
+				activities.VerifyCustomer,
+				workflow.GetInfo(ctx).WorkflowExecution.ID, // workflow ID is the customer ID
+			).Get(ctx, nil)
+			if err != nil {
+				return fmt.Errorf("unable to mark customer as verified: %w", err)
+			}
+
 			return nil
 		}
 
-		state = IncorrectCode
+		mostRecentAttempt = IncorrectCode
 	}
 
-	state = MaxAttemptsReached
+	mostRecentAttempt = MaxAttemptsReached
 	return nil
 }

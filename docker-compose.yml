@@ -13,6 +13,8 @@ services:
       context: "."
       dockerfile: "internal/customer/Dockerfile.worker"
     depends_on:
+      postgres:
+        condition: service_healthy
       temporal:
         condition: service_started
 

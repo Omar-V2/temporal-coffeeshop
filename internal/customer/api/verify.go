@@ -15,12 +15,12 @@ func (s customerServiceGRPCServer) VerifyCustomer(ctx context.Context, request *
 		return nil, fmt.Errorf("failed to signal verify phone workflow with ID: %s, err: %w", workflowID, err)
 	}
 
-	response, err := s.temporalClient.QueryWorkflow(ctx, workflowID, "", verifyphone.VerificationStateQueryType)
+	response, err := s.temporalClient.QueryWorkflow(ctx, workflowID, "", verifyphone.VerificationResultQueryType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to  query verify phone workflow with ID %s, err: %w", workflowID, err)
 	}
 
-	var result verifyphone.VerificationState
+	var result verifyphone.VerificationResult
 	err = response.Get(&result)
 	if err != nil {
 		return nil, err
