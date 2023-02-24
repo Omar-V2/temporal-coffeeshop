@@ -10,11 +10,11 @@ type OneTimeCode struct {
 	validUntil time.Time
 }
 
-func NewOneTimeCode(validFor time.Duration) *OneTimeCode {
+func NewOneTimeCode(validUntil time.Time) *OneTimeCode {
 	code := generateCode()
 	return &OneTimeCode{
 		code:       code,
-		validUntil: time.Now().Add(validFor),
+		validUntil: validUntil,
 	}
 }
 

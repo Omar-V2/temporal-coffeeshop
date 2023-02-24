@@ -49,7 +49,17 @@ func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	userCodeChannel := workflow.GetSignalChannel(ctx, UserCodeSignal)
 
 	for attempts < params.MaximumAttempts {
-		oneTimeCode := NewOneTimeCode(params.CodeValidityDuration)
+		encodedCodeExpiryTime := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
+			return workflow.Now(ctx).Add(params.CodeValidityDuration)
+		})
+
+		var codeExpiryTime time.Time
+		err = encodedCodeExpiryTime.Get(&codeExpiryTime)
+		if err != nil {
+			return fmt.Errorf("failed to decode one time code from side effect function: %w", err)
+		}
+
+		oneTimeCode := NewOneTimeCode(codeExpiryTime)
 
 		message := fmt.Sprintf(
 			"Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: %s",

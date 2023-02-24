@@ -60,10 +60,6 @@ func run() error {
 
 	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{})
 
-	// smsSender := verifyphone.SMSSender{
-	// 	Sender: mockSMSSender,
-	// }
-
 	w.RegisterActivity(activities)
 	w.RegisterWorkflow(verifyphone.NewWorkflow)
 
