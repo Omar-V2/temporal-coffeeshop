@@ -15,7 +15,8 @@ Navigate to localhost:8233 to view the Temporal UI\
 
 This will insert a new record into the DB and execute the VerifyPhoneWorkflow
 
-```curl --location 'http://localhost:8081/v1/customer' \
+```
+curl --location 'http://localhost:8081/v1/customer' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "customer": {
