@@ -15,3 +15,5 @@
 
 # Generated code from protobuf
 internal/pb/*
+
+.DS_Store
