@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -34,6 +35,12 @@ type WorkflowParams struct {
 func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts:    5,
+			InitialInterval:    time.Second * 5,
+			MaximumInterval:    time.Minute * 2,
+			BackoffCoefficient: 2.0,
+		},
 	}
 	activityCtx := workflow.WithActivityOptions(ctx, options)
 
