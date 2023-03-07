@@ -12,6 +12,7 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
+	"go.temporal.io/sdk/workflow"
 )
 
 type Config struct {
@@ -61,7 +62,9 @@ func run() error {
 	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{})
 
 	w.RegisterActivity(activities)
-	w.RegisterWorkflow(verifyphone.NewWorkflow)
+	w.RegisterWorkflowWithOptions(verifyphone.NewWorkflow, workflow.RegisterOptions{
+		Name: "Verify Phone Workflow",
+	})
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
