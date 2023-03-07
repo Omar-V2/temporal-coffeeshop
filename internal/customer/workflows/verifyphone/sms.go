@@ -2,14 +2,6 @@ package verifyphone
 
 import "fmt"
 
-type SMSSender struct {
-	Sender Sender
-}
-
-func (s *SMSSender) SendSMS(phoneNumber, message string) error {
-	return s.Sender.SendMessage(phoneNumber, message)
-}
-
 // TwilioSMSSender implements the SendMessage interface using the Twilio API
 // to send an SMS message to the provided phone number.
 type TwilioSMSSender struct{}
