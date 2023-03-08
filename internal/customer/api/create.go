@@ -39,7 +39,7 @@ func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request 
 		CodeLength:           4,
 		CodeValidityDuration: time.Second * 30,
 	}
-	_, err = s.temporalClient.ExecuteWorkflow(ctx, workflowOptions, verifyphone.NewWorkflow, params)
+	_, err = s.temporalClient.ExecuteWorkflow(ctx, workflowOptions, "VerifyPhoneWorkflow", params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute verify phone workflow: %w", err)
 	}

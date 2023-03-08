@@ -55,19 +55,19 @@ func run() error {
 	customerVerifier := customerdata.NewCustomerDBVerifier(db)
 
 	//uncomment this line in place of the line below it to enable random code generation
-	codeGenerator := verifyphone.RandomCodeGenerator{}
-	// codeGenerator := verifyphone.StaticCodeGenerator{}
+	// codeGenerator := verifyphone.RandomCodeGenerator{}
+	codeGenerator := verifyphone.StaticCodeGenerator{}
 
 	// uncomment this line and use it in place of mockSMSSender to simulate an activity failure
 	// faultySMSSender := &verifyphone.FaultySMSSender{}
 	mockSMSSender := &verifyphone.MockSMSSender{}
 	activities := verifyphone.NewActivities(mockSMSSender, customerVerifier, codeGenerator)
 
-	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{})
+	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{DisableRegistrationAliasing: true})
 
 	w.RegisterActivity(activities)
 	w.RegisterWorkflowWithOptions(verifyphone.NewWorkflow, workflow.RegisterOptions{
-		Name: "Verify Phone Workflow",
+		Name: "VerifyPhoneWorkflow",
 	})
 
 	err = w.Run(worker.InterruptCh())
