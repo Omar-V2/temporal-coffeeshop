@@ -15,8 +15,12 @@ import (
 type VerifyPhoneWorkflowTestSuite struct {
 	suite.Suite
 	testsuite.WorkflowTestSuite
-	env        *testsuite.TestWorkflowEnvironment
-	activities *activities
+	env         *testsuite.TestWorkflowEnvironment
+	activities  *activities
+	customerID  string
+	codeLength  int
+	phoneNumber string
+	smsMessage  string
 }
 
 func TestVerifyPhoneWorkflow(t *testing.T) {
@@ -26,6 +30,11 @@ func TestVerifyPhoneWorkflow(t *testing.T) {
 func (s *VerifyPhoneWorkflowTestSuite) SetupTest() {
 	s.env = s.NewTestWorkflowEnvironment()
 	s.activities = &activities{}
+	s.customerID = uuid.NewString()
+	s.codeLength = 4
+	s.phoneNumber = "0123456789"
+	s.smsMessage = "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
+
 }
 
 func (s *VerifyPhoneWorkflowTestSuite) TearDownTest(suiteName, testName string) {
@@ -33,20 +42,26 @@ func (s *VerifyPhoneWorkflowTestSuite) TearDownTest(suiteName, testName string) 
 }
 
 func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflow() {
-	testCustomerID := uuid.NewString()
-	testPhoneNumber := "012345678"
-	testMessage := "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
+	codeValidityDuration := time.Minute * 2
+
+	s.env.OnActivity(s.activities.NewOneTimeCode, mock.Anything, mock.Anything).Return(
+		func(length int, validityDuration time.Duration) (*OneTimeCode, error) {
+			s.Equal(s.codeLength, length)
+			s.Equal(codeValidityDuration, validityDuration)
+
+			return &OneTimeCode{Code: "1234", ValidUntil: s.env.Now().Add(validityDuration)}, nil
+		})
 
 	s.env.OnActivity(s.activities.SendSMS, mock.Anything, mock.Anything).Return(
 		func(phoneNumber, message string) error {
-			s.Equal(testPhoneNumber, phoneNumber)
-			s.Equal(testMessage, message)
+			s.Equal(s.phoneNumber, phoneNumber)
+			s.Equal(s.smsMessage, message)
 			return nil
 		})
 
 	s.env.OnActivity(s.activities.VerifyCustomer, mock.Anything, mock.Anything).Return(
 		func(ctx context.Context, customerID string) error {
-			s.Equal(testCustomerID, customerID)
+			s.Equal(s.customerID, customerID)
 			return nil
 		})
 
@@ -56,12 +71,13 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflow() {
 	}, time.Minute*1)
 
 	params := WorkflowParams{
-		PhoneNumber:          testPhoneNumber,
+		PhoneNumber:          s.phoneNumber,
 		MaximumAttempts:      2,
-		CodeValidityDuration: time.Minute * 2,
+		CodeLength:           s.codeLength,
+		CodeValidityDuration: codeValidityDuration,
 	}
 
-	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: testCustomerID})
+	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: s.customerID})
 	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
@@ -75,20 +91,26 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflow() {
 }
 
 func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTries() {
-	testCustomerID := uuid.NewString()
-	testPhoneNumber := "012345678"
-	testMessage := "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
+	codeValidityDuration := time.Minute * 3
+
+	s.env.OnActivity(s.activities.NewOneTimeCode, mock.Anything, mock.Anything).Return(
+		func(length int, validityDuration time.Duration) (*OneTimeCode, error) {
+			s.Equal(s.codeLength, length)
+			s.Equal(codeValidityDuration, validityDuration)
+
+			return &OneTimeCode{Code: "1234", ValidUntil: s.env.Now().Add(validityDuration)}, nil
+		}).Twice()
 
 	s.env.OnActivity(s.activities.SendSMS, mock.Anything, mock.Anything).Return(
 		func(phoneNumber, message string) error {
-			s.Equal(testPhoneNumber, phoneNumber)
-			s.Equal(testMessage, message)
+			s.Equal(s.phoneNumber, phoneNumber)
+			s.Equal(s.smsMessage, message)
 			return nil
 		}).Twice()
 
 	s.env.OnActivity(s.activities.VerifyCustomer, mock.Anything, mock.Anything).Return(
 		func(ctx context.Context, customerID string) error {
-			s.Equal(testCustomerID, customerID)
+			s.Equal(s.customerID, customerID)
 			return nil
 		})
 
@@ -114,12 +136,13 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTrie
 	}, time.Minute*2)
 
 	params := WorkflowParams{
-		PhoneNumber:          testPhoneNumber,
+		PhoneNumber:          s.phoneNumber,
 		MaximumAttempts:      2,
-		CodeValidityDuration: time.Minute * 3,
+		CodeLength:           s.codeLength,
+		CodeValidityDuration: codeValidityDuration,
 	}
 
-	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: testCustomerID})
+	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: s.customerID})
 	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
@@ -133,21 +156,22 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTrie
 }
 
 func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowMaximumAttemptsReached() {
-	testPhoneNumber := "012345678"
-	testMessage := "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
+	codeValidityDuration := time.Minute * 3
+
+	s.env.OnActivity(s.activities.NewOneTimeCode, mock.Anything, mock.Anything).Return(
+		func(length int, validityDuration time.Duration) (*OneTimeCode, error) {
+			s.Equal(s.codeLength, length)
+			s.Equal(codeValidityDuration, validityDuration)
+
+			return &OneTimeCode{Code: "1234", ValidUntil: s.env.Now().Add(validityDuration)}, nil
+		}).Twice()
 
 	s.env.OnActivity(s.activities.SendSMS, mock.Anything, mock.Anything).Return(
 		func(phoneNumber, message string) error {
-			s.Equal(testPhoneNumber, phoneNumber)
-			s.Equal(testMessage, message)
+			s.Equal(s.phoneNumber, phoneNumber)
+			s.Equal(s.smsMessage, message)
 			return nil
 		}).Twice()
-
-	params := WorkflowParams{
-		PhoneNumber:          testPhoneNumber,
-		MaximumAttempts:      2,
-		CodeValidityDuration: time.Minute * 3,
-	}
 
 	// send the incorrect code twice - hence exceeded max attempts and causing the wf to terminate
 	s.env.RegisterDelayedCallback(func() {
@@ -157,6 +181,13 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowMaximumAttemptsRea
 	s.env.RegisterDelayedCallback(func() {
 		s.env.SignalWorkflow(UserCodeSignal, "4567")
 	}, time.Minute*2)
+
+	params := WorkflowParams{
+		PhoneNumber:          s.phoneNumber,
+		MaximumAttempts:      2,
+		CodeLength:           s.codeLength,
+		CodeValidityDuration: codeValidityDuration,
+	}
 
 	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
@@ -171,30 +202,30 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowMaximumAttemptsRea
 }
 
 func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
-	testCustomerID := uuid.NewString()
-	testPhoneNumber := "012345678"
-	testMessage := "Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: 1234"
+	codeValidityDuration := time.Minute * 1
+
+	s.env.OnActivity(s.activities.NewOneTimeCode, mock.Anything, mock.Anything).Return(
+		func(length int, validityDuration time.Duration) (*OneTimeCode, error) {
+			s.Equal(s.codeLength, length)
+			s.Equal(codeValidityDuration, validityDuration)
+
+			return &OneTimeCode{Code: "1234", ValidUntil: s.env.Now().Add(validityDuration)}, nil
+		}).Twice()
 
 	s.env.OnActivity(s.activities.SendSMS, mock.Anything, mock.Anything).Return(
 		func(phoneNumber, message string) error {
-			s.Equal(testPhoneNumber, phoneNumber)
-			s.Equal(testMessage, message)
+			s.Equal(s.phoneNumber, phoneNumber)
+			s.Equal(s.smsMessage, message)
 			return nil
 		}).Twice()
 
 	s.env.OnActivity(s.activities.VerifyCustomer, mock.Anything, mock.Anything).Return(
 		func(ctx context.Context, customerID string) error {
-			s.Equal(testCustomerID, customerID)
+			s.Equal(s.customerID, customerID)
 			return nil
 		})
 
-	params := WorkflowParams{
-		PhoneNumber:          testPhoneNumber,
-		MaximumAttempts:      2,
-		CodeValidityDuration: time.Minute * 1,
-	}
-
-	// send the correct code after one minute, which is after it has expired.
+	// send the correct code after two minutes have elapsed, which is after the expiry time.
 	s.env.RegisterDelayedCallback(func() {
 		s.env.SignalWorkflow(UserCodeSignal, "1234")
 	}, time.Minute*2)
@@ -215,7 +246,14 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
 		s.env.SignalWorkflow(UserCodeSignal, "1234")
 	}, time.Minute*3)
 
-	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: testCustomerID})
+	params := WorkflowParams{
+		PhoneNumber:          s.phoneNumber,
+		MaximumAttempts:      2,
+		CodeLength:           s.codeLength,
+		CodeValidityDuration: codeValidityDuration,
+	}
+
+	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: s.customerID})
 	s.env.ExecuteWorkflow(NewWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 

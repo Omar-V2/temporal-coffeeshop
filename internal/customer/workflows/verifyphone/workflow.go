@@ -28,7 +28,8 @@ const (
 
 type WorkflowParams struct {
 	PhoneNumber          string
-	MaximumAttempts      uint
+	MaximumAttempts      int
+	CodeLength           int
 	CodeValidityDuration time.Duration
 }
 
@@ -44,11 +45,13 @@ func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	}
 	activityCtx := workflow.WithActivityOptions(ctx, options)
 
-	var attempts uint
+	var attempts int
 	var mostRecentAttempt VerificationResult
 	var activities *activities
 
-	err := workflow.SetQueryHandler(ctx, VerificationResultQueryType, func() (VerificationResult, error) { return mostRecentAttempt, nil })
+	err := workflow.SetQueryHandler(ctx, VerificationResultQueryType, func() (VerificationResult, error) {
+		return mostRecentAttempt, nil
+	})
 	if err != nil {
 		return err
 	}
@@ -56,21 +59,17 @@ func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	userCodeChannel := workflow.GetSignalChannel(ctx, UserCodeSignal)
 
 	for attempts < params.MaximumAttempts {
-		encodedCodeExpiryTime := workflow.SideEffect(ctx, func(ctx workflow.Context) interface{} {
-			return workflow.Now(ctx).Add(params.CodeValidityDuration)
-		})
-
-		var codeExpiryTime time.Time
-		err = encodedCodeExpiryTime.Get(&codeExpiryTime)
+		var oneTimeCode *OneTimeCode
+		err := workflow.
+			ExecuteActivity(activityCtx, activities.NewOneTimeCode, params.CodeLength, params.CodeValidityDuration).
+			Get(ctx, &oneTimeCode)
 		if err != nil {
-			return fmt.Errorf("failed to decode one time code from side effect function: %w", err)
+			return fmt.Errorf("failed to generate new one time code: %w", err)
 		}
-
-		oneTimeCode := NewOneTimeCode(codeExpiryTime)
 
 		message := fmt.Sprintf(
 			"Thanks for signing up to GoCoffee. Please enter the following code in our app to verify your phone number: %s",
-			oneTimeCode.code,
+			oneTimeCode.Code,
 		)
 		err = workflow.ExecuteActivity(activityCtx, activities.SendSMS, params.PhoneNumber, message).Get(ctx, nil)
 		if err != nil {

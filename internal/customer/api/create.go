@@ -36,6 +36,7 @@ func (s *customerServiceGRPCServer) CreateCustomer(ctx context.Context, request 
 	params := verifyphone.WorkflowParams{
 		PhoneNumber:          createdCustomer.PhoneNumber,
 		MaximumAttempts:      3,
+		CodeLength:           4,
 		CodeValidityDuration: time.Second * 30,
 	}
 	_, err = s.temporalClient.ExecuteWorkflow(ctx, workflowOptions, verifyphone.NewWorkflow, params)

@@ -2,32 +2,37 @@ package verifyphone
 
 import (
 	crypto "crypto/subtle"
+	"math/rand"
 	"time"
 )
 
 type OneTimeCode struct {
-	code       string
-	validUntil time.Time
-}
-
-func NewOneTimeCode(validUntil time.Time) *OneTimeCode {
-	code := generateCode()
-	return &OneTimeCode{
-		code:       code,
-		validUntil: validUntil,
-	}
+	Code       string
+	ValidUntil time.Time
 }
 
 func (o *OneTimeCode) IsExpired(currentTime time.Time) bool {
-	return currentTime.After(o.validUntil)
+	return currentTime.After(o.ValidUntil)
 }
 
 func (o *OneTimeCode) Matches(codeToCompare string) bool {
-	match := crypto.ConstantTimeCompare([]byte(o.code), []byte(codeToCompare))
+	match := crypto.ConstantTimeCompare([]byte(o.Code), []byte(codeToCompare))
 	return match == 1
 }
 
-// TODO: generate random four digit code
-func generateCode() string {
+type RandomCodeGenerator struct{}
+
+func (g RandomCodeGenerator) GenerateCode(length int) string {
+	const characters = "0123456789"
+	code := make([]byte, length)
+	for i := range code {
+		code[i] = characters[rand.Intn(len(characters))]
+	}
+	return string(code)
+}
+
+type StaticCodeGenerator struct{}
+
+func (g StaticCodeGenerator) GenerateCode(length int) string {
 	return "1234"
 }
