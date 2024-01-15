@@ -219,7 +219,7 @@ func RegisterCustomerServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/CreateCustomer", runtime.WithHTTPPathPattern("/v1/customer"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/CreateCustomer", runtime.WithHTTPPathPattern("/v1/customers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -244,7 +244,7 @@ func RegisterCustomerServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/VerifyCustomer", runtime.WithHTTPPathPattern("/v1/customer/{customer_id}/verify"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/VerifyCustomer", runtime.WithHTTPPathPattern("/v1/customers/{customer_id}:verify"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -269,7 +269,7 @@ func RegisterCustomerServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/GetCustomer", runtime.WithHTTPPathPattern("/v1/customer/{customer_id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/GetCustomer", runtime.WithHTTPPathPattern("/v1/customers/{customer_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -294,7 +294,7 @@ func RegisterCustomerServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/BatchGetCustomers", runtime.WithHTTPPathPattern("/v1/customer:batchGet"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/customer.v1.CustomerService/BatchGetCustomers", runtime.WithHTTPPathPattern("/v1/customers:batchGet"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -358,7 +358,7 @@ func RegisterCustomerServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/CreateCustomer", runtime.WithHTTPPathPattern("/v1/customer"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/CreateCustomer", runtime.WithHTTPPathPattern("/v1/customers"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -380,7 +380,7 @@ func RegisterCustomerServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/VerifyCustomer", runtime.WithHTTPPathPattern("/v1/customer/{customer_id}/verify"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/VerifyCustomer", runtime.WithHTTPPathPattern("/v1/customers/{customer_id}:verify"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -402,7 +402,7 @@ func RegisterCustomerServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/GetCustomer", runtime.WithHTTPPathPattern("/v1/customer/{customer_id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/GetCustomer", runtime.WithHTTPPathPattern("/v1/customers/{customer_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -424,7 +424,7 @@ func RegisterCustomerServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/BatchGetCustomers", runtime.WithHTTPPathPattern("/v1/customer:batchGet"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/customer.v1.CustomerService/BatchGetCustomers", runtime.WithHTTPPathPattern("/v1/customers:batchGet"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -444,13 +444,13 @@ func RegisterCustomerServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 }
 
 var (
-	pattern_CustomerService_CreateCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "customer"}, ""))
+	pattern_CustomerService_CreateCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "customers"}, ""))
 
-	pattern_CustomerService_VerifyCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "customer", "customer_id", "verify"}, ""))
+	pattern_CustomerService_VerifyCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "customers", "customer_id"}, "verify"))
 
-	pattern_CustomerService_GetCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "customer", "customer_id"}, ""))
+	pattern_CustomerService_GetCustomer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"v1", "customers", "customer_id"}, ""))
 
-	pattern_CustomerService_BatchGetCustomers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "customer"}, "batchGet"))
+	pattern_CustomerService_BatchGetCustomers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "customers"}, "batchGet"))
 )
 
 var (
