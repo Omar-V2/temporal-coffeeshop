@@ -37,11 +37,11 @@ func run() error {
 		return fmt.Errorf("failed to read config from environment variables: %w", err)
 	}
 
-	c, err := client.Dial(client.Options{HostPort: cfg.TemporalAddress})
+	temporalClient, err := client.Dial(client.Options{HostPort: cfg.TemporalAddress})
 	if err != nil {
 		return fmt.Errorf("unable to create Temporal client: %w", err)
 	}
-	defer c.Close()
+	defer temporalClient.Close()
 
 	connectionString := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s",
@@ -63,7 +63,7 @@ func run() error {
 	mockSMSSender := &verifyphone.MockSMSSender{}
 	activities := verifyphone.NewActivities(mockSMSSender, customerVerifier, codeGenerator)
 
-	w := worker.New(c, cfg.TemporalTaskQueue, worker.Options{DisableRegistrationAliasing: true})
+	w := worker.New(temporalClient, cfg.TemporalTaskQueue, worker.Options{DisableRegistrationAliasing: true})
 
 	w.RegisterActivity(activities)
 	w.RegisterWorkflowWithOptions(verifyphone.NewWorkflow, workflow.RegisterOptions{

@@ -87,7 +87,7 @@ func (s *CustomerIntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	s.runCustomerServer(postgresAddress)
-	s.runCustomerWorker()
+	s.runCustomerWorker(postgresAddress)
 
 	conn, err := grpc.Dial(s.customerServiceAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	s.Require().NoError(err)
@@ -133,16 +133,23 @@ func (s *CustomerIntegrationTestSuite) runCustomerServer(postgresAddress string)
 	}()
 }
 
-func (s *CustomerIntegrationTestSuite) runCustomerWorker() {
+func (s *CustomerIntegrationTestSuite) runCustomerWorker(postgresAddress string) {
+	connectionString := fmt.Sprintf(
+		"postgres://postgres:password@%s/customer?sslmode=disable", postgresAddress,
+	)
+	db, err := sql.Open("pgx", connectionString)
+	s.Require().NoError(err)
+
 	s.temporalWorker = worker.New(s.temporalClient, "TEMPORAL_COFFEE_SHOP_TASK_QUEUE", worker.Options{})
 
+	customerVerifier := customerdata.NewCustomerDBVerifier(db)
+	codeGenerator := verifyphone.StaticCodeGenerator{}
 	mockSMSSender := &verifyphone.MockSMSSender{}
-	smsSender := verifyphone.SMSSender{
-		Sender: mockSMSSender,
-	}
-	s.temporalWorker.RegisterActivity(&smsSender)
+	activities := verifyphone.NewActivities(mockSMSSender, customerVerifier, codeGenerator)
+
+	s.temporalWorker.RegisterActivity(activities)
 	s.temporalWorker.RegisterWorkflow(verifyphone.NewWorkflow)
 
-	err := s.temporalWorker.Start()
+	err = s.temporalWorker.Start()
 	s.Require().NoError(err)
 }

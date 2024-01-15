@@ -8,7 +8,6 @@ option go_package = "tmprldemo/pb";
 
 // TODO: Add proto-gen-validate rules
 
-
 // The Customer service is responsible for all customer related requests such creating new customers and verifying exsiting ones.
 service CustomerService {
   // Creates a new customer.
@@ -29,19 +28,14 @@ service CustomerService {
 
   // Retrieves a single customer by their id.
   rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse) {
-    option (google.api.http) = {
-      get: "/v1/customer/{customer_id}"
-    };
+    option (google.api.http) = {get: "/v1/customer/{customer_id}"};
   }
 
   // Retrieves a batch of customers by a list of the provided customer ids.
   rpc BatchGetCustomers(BatchGetCustomersRequest) returns (BatchGetCustomersResponse) {
-    option (google.api.http) = {
-      get: "/v1/customer:batchGet"
-    };
+    option (google.api.http) = {get: "/v1/customer:batchGet"};
   }
 }
-
 
 // Customer represents a customer in the coffee shop system.
 message Customer {
@@ -62,7 +56,7 @@ message Customer {
 // CreateCustomerRequest is the request issued to create a customer in the system.
 // This method is idempotent.
 message CreateCustomerRequest {
-  // An idempotent request id to uniqely identify the create request. 
+  // An idempotent request id to uniqely identify the create request.
   // This field is optional - if no request_id is provided, one will be automatically generated.
   string request_id = 1;
   // The customer to be created.
@@ -91,7 +85,7 @@ enum VerificationResult {
   VERIFICATION_RESULT_SUCCESS = 5;
 }
 
-// VerifyCustomerRequest performs verification on the customers phone number by comparing 
+// VerifyCustomerRequest performs verification on the customers phone number by comparing
 message VerifyCustomerRequest {
   // The id of the customer to verify.
   string customer_id = 2;
