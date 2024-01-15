@@ -16,7 +16,7 @@ Navigate to localhost:8233 to view the Temporal UI\
 This will insert a new record into the DB and execute the VerifyPhoneWorkflow
 
 ```
-curl --location 'http://localhost:8081/v1/customer' \
+curl --location 'http://localhost:8081/v1/customers' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "customer": {
@@ -34,7 +34,7 @@ curl --location 'http://localhost:8081/v1/customer' \
 This sends a signals to the workflow containing the code you submitted in the request which will then perform the comparison logic. The handler then queries the state of the workflow to retrieve the verification result, which is then sent in the response back to the caller.
 
 ```
-curl --location 'http://localhost:8081/v1/customer/<your-customer-id>/verify' \
+curl --location 'http://localhost:8081/v1/customers/<your-customer-id>:verify' \
 --header 'Content-Type: application/json' \
 --data '{
     "verification_code": "1233"
