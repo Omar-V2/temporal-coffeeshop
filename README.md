@@ -2,7 +2,7 @@
 
 This repository aims to demonstrate some of the features of the [Temporal](https://temporal.io) workflow engine and how it can alleviate some difficulties when developing distributed systems.
 
-Specifically it aims to demonstrate the notion of "durable execution" an abstraction which allows preservation of application state without explicitly writing to a database. This abstraction is very powerful as it allows one to write business logic that can span multiple services or APIs, involve waiting for arbitrary amounts of time (hours, days, years!), can wait for user input all in a single function without worrying about partial failure states. Temporal provides this abstraction in the form of workflows - see the [Verification Workflow](internal/customer/workflows/verifyphone/workflow.go) in this repo for an example.
+Specifically it aims to demonstrate the notion of "durable execution" an abstraction which allows preservation of application state without explicitly writing to a database. This abstraction is very powerful as it allows one to write business logic that can span multiple services or APIs, involve waiting for arbitrary amounts of time (hours, days, years!), can wait for user input all in a single function without worrying about partial failure states. Temporal provides this abstraction in the form of workflows - see the [Verification Workflow](internal/customer/workflows/verifyphone/workflow.go#L34) in this repo for an example.
 
 ## High Level Architecture and Flow
 
@@ -47,10 +47,25 @@ curl --location 'http://localhost:8081/v1/customers/<your-customer-id>:verify' \
 --header 'Content-Type: application/json' \
 --data '{
     "verification_code": "1233"
+    <!-- set to 1234 to complete the flow successfully -->
 }'
 ```
 
-The correct code is set to `1234` by default and the default expiry time is two minutes.
+The correct code is set to `1234` by default.
+
+The default expiry time is two minutes and the default value for the maximum number of allowed attempts is 3, after which the workflow will return with a terminal failure. These parameters can be modified [here](internal/customer/api/create.go#L36)
+
+### Verifying durability in the face of failure
+
+Let's take our server offline mid flow to prove Temporal is indeed persisting our workflow the state.
+
+1. Create a customer, triggering the sending of the first SMS message
+2. Make an incorrect verification attempt by sending an incorrect code
+3. Make another incorrect verification attempt by sending another incorrect code (leaving us with only on attempt left)
+4. Take our server offline with `docker-compose down`
+5. Make final incorrect verification attempt which should result in a response containing: `VERIFICATION_RESULT_MAX_ATTEMPTS_REACHED`.
+
+This proves that even despite our server crash, and not explicitly saving the number of attempts in our database that Temporal was able to utilise its "replay" feature to reconstruct the state and realises that two attempts had already been made prior!
 
 The diagram below visualises the end to flow.
 
