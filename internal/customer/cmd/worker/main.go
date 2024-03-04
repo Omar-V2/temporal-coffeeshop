@@ -66,7 +66,7 @@ func run() error {
 	w := worker.New(temporalClient, cfg.TemporalTaskQueue, worker.Options{DisableRegistrationAliasing: true})
 
 	w.RegisterActivity(activities)
-	w.RegisterWorkflowWithOptions(verifyphone.NewWorkflow, workflow.RegisterOptions{
+	w.RegisterWorkflowWithOptions(verifyphone.NewVerificationWorkflow, workflow.RegisterOptions{
 		Name: "VerifyPhoneWorkflow",
 	})
 

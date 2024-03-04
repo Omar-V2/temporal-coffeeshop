@@ -78,7 +78,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflow() {
 	}
 
 	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: s.customerID})
-	s.env.ExecuteWorkflow(NewWorkflow, params)
+	s.env.ExecuteWorkflow(NewVerificationWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationResultQueryType)
@@ -143,7 +143,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowAllowsMultipleTrie
 	}
 
 	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: s.customerID})
-	s.env.ExecuteWorkflow(NewWorkflow, params)
+	s.env.ExecuteWorkflow(NewVerificationWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationResultQueryType)
@@ -189,7 +189,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowMaximumAttemptsRea
 		CodeValidityDuration: codeValidityDuration,
 	}
 
-	s.env.ExecuteWorkflow(NewWorkflow, params)
+	s.env.ExecuteWorkflow(NewVerificationWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationResultQueryType)
@@ -254,7 +254,7 @@ func (s *VerifyPhoneWorkflowTestSuite) TestVerifyPhoneWorkflowCodeExpiration() {
 	}
 
 	s.env.SetStartWorkflowOptions(client.StartWorkflowOptions{ID: s.customerID})
-	s.env.ExecuteWorkflow(NewWorkflow, params)
+	s.env.ExecuteWorkflow(NewVerificationWorkflow, params)
 	s.True(s.env.IsWorkflowCompleted())
 
 	res, err := s.env.QueryWorkflow(VerificationResultQueryType)

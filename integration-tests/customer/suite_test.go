@@ -148,7 +148,7 @@ func (s *CustomerIntegrationTestSuite) runCustomerWorker(postgresAddress string)
 	activities := verifyphone.NewActivities(mockSMSSender, customerVerifier, codeGenerator)
 
 	s.temporalWorker.RegisterActivity(activities)
-	s.temporalWorker.RegisterWorkflow(verifyphone.NewWorkflow)
+	s.temporalWorker.RegisterWorkflow(verifyphone.NewVerificationWorkflow)
 
 	err = s.temporalWorker.Start()
 	s.Require().NoError(err)

@@ -8,8 +8,6 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-// TODO: Add comments to all structs/funcs etc.
-
 type VerificationResult int
 
 const (
@@ -33,7 +31,7 @@ type WorkflowParams struct {
 	CodeValidityDuration time.Duration
 }
 
-func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
+func NewVerificationWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	options := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 5,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -49,6 +47,8 @@ func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 	var mostRecentAttempt VerificationResult
 	var activities *activities
 
+	// set up a query handler to return the state of the most recent attempt.
+	// This allows external entities to read this workflow state by querying this handler.
 	err := workflow.SetQueryHandler(ctx, VerificationResultQueryType, func() (VerificationResult, error) {
 		return mostRecentAttempt, nil
 	})
@@ -76,6 +76,7 @@ func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 			return fmt.Errorf("unable to send sms to phone number: %s. err: %w", params.PhoneNumber, err)
 		}
 
+		// blocks the workflow until a code is received from the user
 		var userCode string
 		userCodeChannel.Receive(ctx, &userCode)
 		attempts++
@@ -85,22 +86,22 @@ func NewWorkflow(ctx workflow.Context, params WorkflowParams) error {
 			continue
 		}
 
-		if oneTimeCode.Matches(userCode) {
-			mostRecentAttempt = CorrectCode
-
-			err := workflow.ExecuteActivity(
-				activityCtx,
-				activities.VerifyCustomer,
-				workflow.GetInfo(ctx).WorkflowExecution.ID, // workflow ID is the customer ID
-			).Get(ctx, nil)
-			if err != nil {
-				return fmt.Errorf("unable to mark customer as verified: %w", err)
-			}
-
-			return nil
+		if !oneTimeCode.Matches(userCode) {
+			mostRecentAttempt = IncorrectCode
+			continue
 		}
 
-		mostRecentAttempt = IncorrectCode
+		mostRecentAttempt = CorrectCode
+		err = workflow.ExecuteActivity(
+			activityCtx,
+			activities.VerifyCustomer,
+			workflow.GetInfo(ctx).WorkflowExecution.ID, // workflow ID is the customer ID
+		).Get(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("unable to mark customer as verified: %w", err)
+		}
+
+		return nil
 	}
 
 	mostRecentAttempt = MaxAttemptsReached
