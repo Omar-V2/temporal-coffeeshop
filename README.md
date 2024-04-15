@@ -8,7 +8,7 @@ Specifically it aims to demonstrate the notion of "durable execution" an abstrac
 
 ![architecture](images/architecture.png)
 
-This repo accompanies this [blog post](), so it's recommended to read that first, however a simple explanation of the business logic implemented is outlined below.
+This repo accompanies this [blog post](https://medium.com/@mckinseydigital/building-bulletproof-applications-with-temporal-acf92e18847b), so it's recommended to read that first, however a simple explanation of the business logic implemented is outlined below.
 
 We implement a workflow to verify an imaginary customer's phone number. Imagine a user has just signed up to our application. We send them an SMS with a one time code, which they must enter into our app to confirm they are the real owner of this phone number. This might seem like a simple thing to code at first, but doing so in a reliable and robust way can be more challenging that you think. What happens if our app crashes after sending the user the code or after receiving the code but before marking the user as verified? Which pieces of information do we need to save to our database and retrieve again to implement this logic? Temporal provides an abstraction known as a workflow where we don't have to handle these scenarios explicitly because of the properties afforded to use by the Temporal runtime, namely state tracking and persistence (durable execution) see the blog post for more details on how exactly this works.
 
